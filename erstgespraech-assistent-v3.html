@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Erstgespräch-Assistent – KM Fürsorge GmbH</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;600&display=swap');
+:root {
+  --gold:#B8922A;--gold-l:#D4AF5A;--gold-p:#F5EDD8;--gold-pp:#FFFDF6;
+  --dark:#1A1610;--dark2:#2C2418;--mid:#4A3C28;
+  --txt:#2C2418;--txt2:#6B5A3E;--border:#D4AF5A55;
+  --bg:#FDFAF4;--white:#fff;--ok:#3D7A4A;--err:#8B2E2E;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;}
+
+/* HEADER */
+header{background:var(--dark);padding:16px 28px;display:flex;align-items:center;gap:16px;border-bottom:2px solid var(--gold);}
+header h1{font-family:'Playfair Display',serif;color:var(--gold-l);font-size:1.3rem;font-weight:600;}
+header p{color:#A09070;font-size:0.75rem;margin-top:2px;}
+.hbadge{background:var(--gold);color:var(--dark);font-size:0.68rem;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;}
+
+/* PROGRESS */
+.prog{background:var(--dark2);display:flex;overflow-x:auto;padding:0 8px;}
+.stab{flex:1;min-width:80px;padding:10px 6px;text-align:center;font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#6B5A3E;border-bottom:3px solid transparent;cursor:default;transition:all .3s;white-space:nowrap;}
+.stab .sn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#3C3020;color:#6B5A3E;font-size:.62rem;margin-right:4px;transition:all .3s;}
+.stab.active{color:var(--gold-l);border-bottom-color:var(--gold);}
+.stab.active .sn{background:var(--gold);color:var(--dark);}
+.stab.done{color:#5AAA6A;border-bottom-color:var(--ok);}
+.stab.done .sn{background:var(--ok);color:#fff;}
+.stab.done .sn::after{content:'✓';}
+
+/* MAIN */
+main{max-width:860px;margin:0 auto;padding:24px 18px 60px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:16px;box-shadow:0 2px 12px rgba(184,146,42,.06);}
+.ctitle{font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold);margin-bottom:18px;padding-bottom:9px;border-bottom:1px solid var(--gold-p);display:flex;align-items:center;gap:8px;}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 18px;}
+.full{grid-column:1/-1;}
+.field label{display:block;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt2);margin-bottom:4px;}
+.field label .req{color:var(--gold);margin-left:2px;}
+.field input,.field select,.field textarea{width:100%;padding:8px 11px;border:1.5px solid #D8CEBC;border-radius:7px;font-family:'Source Sans 3',sans-serif;font-size:.86rem;color:var(--txt);background:var(--bg);transition:border-color .2s,box-shadow .2s;outline:none;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,146,42,.12);background:#FFFDF8;}
+.field input.filled{border-color:#A8C4A8;background:#F6FBF6;}
+.field input.bad{border-color:var(--err);}
+.field textarea{resize:vertical;min-height:64px;}
+
+/* CHECKBOXES */
+.cbgroup{display:flex;flex-direction:column;gap:7px;}
+.cbi{display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:7px;border:1.5px solid #D8CEBC;cursor:pointer;font-size:.84rem;background:var(--bg);transition:all .2s;}
+.cbi:hover{border-color:var(--gold-l);background:#FFFDF8;}
+.cbi input[type=checkbox]{accent-color:var(--gold);width:15px;height:15px;cursor:pointer;flex-shrink:0;}
+.cbi.ck{border-color:var(--gold);background:#FDF8EC;}
+
+/* RADIO */
+.rbgroup{display:flex;flex-direction:column;gap:7px;}
+.rbi{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border-radius:7px;border:1.5px solid #D8CEBC;cursor:pointer;font-size:.84rem;background:var(--bg);transition:all .2s;}
+.rbi input[type=radio]{accent-color:var(--gold);margin-top:2px;cursor:pointer;flex-shrink:0;}
+.rbi.ck{border-color:var(--gold);background:#FDF8EC;}
+.rbl{font-weight:700;}
+.rbs{font-size:.73rem;color:var(--txt2);margin-top:1px;}
+
+/* INLINE RADIO (horizontal) */
+.rbh{display:flex;gap:8px;flex-wrap:wrap;}
+.rbhi{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;border:1.5px solid #D8CEBC;cursor:pointer;font-size:.82rem;background:var(--bg);transition:all .2s;}
+.rbhi input[type=radio]{accent-color:var(--gold);cursor:pointer;}
+.rbhi.ck{border-color:var(--gold);background:#FDF8EC;}
+
+/* CB GRID (2 cols) */
+.cbgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+
+/* NAV */
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:18px;border-top:1px solid var(--gold-p);}
+.btn{padding:10px 26px;border-radius:8px;font-family:'Source Sans 3',sans-serif;font-size:.86rem;font-weight:700;letter-spacing:.04em;cursor:pointer;border:none;transition:all .2s;}
+.btn-p{background:var(--gold);color:var(--dark);}
+.btn-p:hover{background:var(--gold-l);transform:translateY(-1px);box-shadow:0 4px 14px rgba(184,146,42,.3);}
+.btn-s{background:transparent;border:1.5px solid var(--gold);color:var(--gold);}
+.btn-s:hover{background:var(--gold-p);}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+.btn-sm{padding:7px 14px;font-size:.75rem;border-radius:6px;}
+
+/* PANELS */
+.panel{display:none;}
+.panel.active{display:block;animation:fi .3s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* INFO BOX */
+.ibox{background:var(--gold-p);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 15px;font-size:.8rem;color:var(--mid);margin-bottom:14px;line-height:1.5;}
+.ibox strong{color:var(--gold);}
+
+/* SECTION DIVIDER */
+.sdiv{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2);margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--gold-p);}
+
+/* SIGNATURE */
+.sigwrap{border:2px dashed var(--gold-l);border-radius:10px;overflow:hidden;background:var(--white);position:relative;}
+#sigCanvas{display:block;width:100%;cursor:crosshair;touch-action:none;}
+.sighint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#C8B888;font-size:.82rem;pointer-events:none;text-align:center;}
+
+/* REVIEW */
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:8px 22px;font-size:.83rem;}
+.ri .rl{font-size:.7rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;}
+.ri .rv{color:var(--dark);margin-top:2px;}
+
+/* DOC PREVIEW */
+.dprev{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:12px;}
+.dprev h3{font-family:'Playfair Display',serif;font-size:.9rem;color:var(--dark);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.dprev h3 .dbadge{font-family:'Source Sans 3',sans-serif;font-size:.62rem;background:var(--gold-p);color:var(--gold);padding:2px 8px;border-radius:12px;font-weight:700;text-transform:uppercase;}
+.ptab{width:100%;border-collapse:collapse;font-size:.79rem;}
+.ptab td{padding:4px 7px;border-bottom:1px solid #EDE3D0;}
+.ptab td:first-child{font-weight:700;color:var(--txt2);width:42%;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;}
+
+/* SUCCESS */
+.succ{text-align:center;padding:32px 16px;}
+.succ .si{font-size:3rem;margin-bottom:14px;}
+.succ h2{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--ok);margin-bottom:8px;}
+.succ p{color:var(--txt2);font-size:.88rem;max-width:440px;margin:0 auto 22px;line-height:1.6;}
+.ddlist{display:flex;flex-direction:column;gap:9px;max-width:440px;margin:0 auto 24px;}
+.ddbtn{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--white);border:1.5px solid var(--gold-l);border-radius:9px;cursor:pointer;font-family:'Source Sans 3',sans-serif;font-size:.84rem;font-weight:700;color:var(--dark);transition:all .2s;}
+.ddbtn:hover{background:var(--gold-p);transform:translateX(2px);}
+.ddbtn .di{color:var(--gold);font-size:1.05rem;}
+.ddbtn.all{border-color:var(--gold);background:var(--gold-p);}
+
+/* PAKET CARDS */
+.pakgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:10px;}
+.pak{border:2px solid #D8CEBC;border-radius:10px;padding:14px 14px;cursor:pointer;transition:all .2s;background:var(--bg);}
+.pak:hover{border-color:var(--gold-l);}
+.pak.sel{border-color:var(--gold);background:#FDF8EC;}
+.pak .pname{font-weight:700;font-size:.88rem;color:var(--dark);}
+.pak .pstd{font-size:.74rem;color:var(--txt2);margin-top:2px;}
+.pak .ppreis{font-size:.78rem;color:var(--gold);font-weight:700;margin-top:6px;}
+
+/* TABLE */
+.dtab{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:8px;}
+.dtab th{background:var(--dark);color:var(--gold-l);padding:7px 10px;text-align:left;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;}
+.dtab td{padding:7px 10px;border-bottom:1px solid #EDE3D0;vertical-align:top;}
+.dtab tr:last-child td{border-bottom:none;}
+
+@media(max-width:600px){
+  .g2,.g3,.cbgrid,.rg{grid-template-columns:1fr;}
+  .g2 .full,.g3 .full{grid-column:1;}
+  header{padding:12px 14px;}
+  main{padding:14px 10px 40px;}
+  .card{padding:16px 14px;}
+  .pakgrid{grid-template-columns:1fr 1fr;}
+}
+
+/* ── VOICE INPUT ─────────────────────────────────── */
+.voice-bar {
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,var(--dark) 0%,#2C2418 100%);
+  border:1.5px solid var(--gold);border-radius:12px;
+  padding:14px 18px;margin-bottom:18px;
+  box-shadow:0 4px 20px rgba(184,146,42,.15);
+}
+.voice-bar .vb-label{color:var(--gold-l);font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;flex:1;}
+.voice-bar .vb-hint{color:#8A7A5A;font-size:.72rem;}
+
+.btn-mic {
+  display:flex;align-items:center;gap:7px;
+  padding:10px 20px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'Source Sans 3',sans-serif;font-size:.82rem;font-weight:700;
+  background:var(--gold);color:var(--dark);transition:all .2s;white-space:nowrap;
+}
+.btn-mic:hover{background:var(--gold-l);transform:translateY(-1px);}
+.btn-mic.listening{background:#c0392b;color:#fff;animation:pulse-mic 1s ease-in-out infinite;}
+.btn-mic.loading{background:#5A7A4A;color:#fff;cursor:wait;}
+@keyframes pulse-mic{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.4);}50%{box-shadow:0 0 0 8px rgba(192,57,43,0);}}
+
+.mic-wave{display:none;align-items:flex-end;gap:2px;height:18px;}
+.btn-mic.listening .mic-wave{display:flex;}
+.mic-wave span{display:block;width:3px;background:#fff;border-radius:2px;animation:wave .8s ease-in-out infinite;}
+.mic-wave span:nth-child(1){height:6px;animation-delay:0s;}
+.mic-wave span:nth-child(2){height:14px;animation-delay:.1s;}
+.mic-wave span:nth-child(3){height:10px;animation-delay:.2s;}
+.mic-wave span:nth-child(4){height:16px;animation-delay:.3s;}
+.mic-wave span:nth-child(5){height:8px;animation-delay:.4s;}
+@keyframes wave{0%,100%{transform:scaleY(1);}50%{transform:scaleY(1.8);}}
+
+.transcript-box{
+  background:var(--dark2);border:1px solid #3C3020;border-radius:8px;
+  padding:10px 14px;margin-top:10px;font-size:.8rem;color:#C8B888;
+  min-height:36px;line-height:1.5;display:none;font-style:italic;
+}
+.transcript-box.show{display:block;}
+
+/* per-field mic button */
+.field-wrap{position:relative;}
+.mic-field-btn{
+  position:absolute;right:4px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;padding:4px 6px;
+  color:#C8B888;font-size:1rem;border-radius:5px;transition:all .2s;
+  line-height:1;
+}
+.mic-field-btn:hover{background:var(--gold-p);color:var(--gold);}
+.mic-field-btn.listening{color:#c0392b;animation:pulse-mic .8s ease-in-out infinite;}
+.field-wrap input,.field-wrap textarea{padding-right:34px;}
+
+/* AI status toast */
+.ai-toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--dark);border:1.5px solid var(--gold);border-radius:10px;
+  padding:12px 20px;font-size:.82rem;color:var(--gold-l);
+  display:flex;align-items:center;gap:10px;z-index:9999;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.ai-toast.show{opacity:1;}
+.ai-toast .spin{width:16px;height:16px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* filled-by-ai highlight */
+input.ai-filled{border-color:#5AAA6A!important;background:#F0FBF0!important;transition:background .5s,border-color .5s;}
+
+</head>
+<body>
+
+<header>
+  <div style="flex:1">
+    <h1>Erstgespräch-Assistent</h1>
+    <p>KM Fürsorge GmbH · HOMECARE – Die Alltagshelfer · Version 3.0 mit Spracheingabe</p>
+  </div>
+  <span class="hbadge">Pflege</span>
+</header>
+
+<div class="prog" id="prog">
+  <div class="stab active" data-s="1"><span class="sn">1</span>Klient</div>
+  <div class="stab" data-s="2"><span class="sn">2</span>Kontakt</div>
+  <div class="stab" data-s="3"><span class="sn">3</span>Pflege­kasse</div>
+  <div class="stab" data-s="4"><span class="sn">4</span>Bedarf</div>
+  <div class="stab" data-s="5"><span class="sn">5</span>Leistungen</div>
+  <div class="stab" data-s="6"><span class="sn">6</span>Bank / SEPA</div>
+  <div class="stab" data-s="7"><span class="sn">7</span>Übersicht</div>
+  <div class="stab" data-s="8"><span class="sn">8</span>Unterschrift</div>
+</div>
+
+<main>
+
+<!-- ═══════════════════════════ STEP 1: KLIENT ═══════════════════════════ -->
+<div class="panel active" id="s1">
+  <div class="card">
+    <div class="ctitle">👤 1. Klient</div>
+    <div class="voice-bar">
+      <div>
+        <div class="vb-label">🎙️ Freidiktat – Schritt 1</div>
+        <div class="vb-hint">z. B. „Maria Müller, geboren am 3. Mai 1942, Hauptstraße 12 in 86899 Landsberg"</div>
+        <div class="transcript-box" id="tr1"></div>
+      </div>
+      <button class="btn-mic" id="mic1" onclick="startDiktat(1)">
+        <span class="mic-icon">🎙️</span>
+        <span class="mic-text">Sprechen</span>
+        <div class="mic-wave"><span></span><span></span><span></span><span></span><span></span></div>
+      </button>
+    </div>
+    <div class="g2">
+      <div class="field full">
+        <label>Name, Vorname <span class="req">*</span></label>
+        <div class="field-wrap">
+          <input id="k_name" placeholder="Müller, Maria" oninput="sync()">
+          <button class="mic-field-btn" title="Sprechen" onclick="startFieldMic('k_name',this)">🎙️</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Geburtsdatum <span class="req">*</span></label>
+        <input type="date" id="k_geb" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>Geschlecht</label>
+        <div class="rbh" style="margin-top:6px;">
+          <label class="rbhi"><input type="radio" name="k_gesch" value="männlich" onchange="sync()"> männlich</label>
+          <label class="rbhi"><input type="radio" name="k_gesch" value="weiblich" onchange="sync()"> weiblich</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Straße, Hausnr. <span class="req">*</span></label>
+        <div class="field-wrap">
+          <input id="k_str" placeholder="Hauptstraße 12" oninput="sync()">
+          <button class="mic-field-btn" title="Sprechen" onclick="startFieldMic('k_str',this)">🎙️</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>PLZ <span class="req">*</span></label>
+        <div class="field-wrap">
+          <input id="k_plz" placeholder="86899" maxlength="5" oninput="sync()">
+          <button class="mic-field-btn" title="Sprechen" onclick="startFieldMic('k_plz',this)">🎙️</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Ort <span class="req">*</span></label>
+        <div class="field-wrap">
+          <input id="k_ort" placeholder="Landsberg am Lech" oninput="sync()">
+          <button class="mic-field-btn" title="Sprechen" onclick="startFieldMic('k_ort',this)">🎙️</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Telefon</label>
+        <input id="k_tel" placeholder="08191 …" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>Mobil</label>
+        <input id="k_mob" oninput="sync()">
+      </div>
+      <div class="field full">
+        <label>E-Mail</label>
+        <input type="email" id="k_mail" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>Familienstand</label>
+        <select id="k_fam" onchange="sync()">
+          <option value="">– bitte wählen –</option>
+          <option>ledig</option><option>verheiratet</option><option>verwitwet</option><option>geschieden</option><option>getrennt lebend</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Personen im Haushalt</label>
+        <input id="k_pers" placeholder="z. B. 2" oninput="sync()">
+      </div>
+      <div class="field full">
+        <label>Hausarzt</label>
+        <div class="field-wrap">
+          <input id="k_arzt" placeholder="Dr. med. …" oninput="sync()">
+          <button class="mic-field-btn" title="Sprechen" onclick="startFieldMic('k_arzt',this)">🎙️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="nav"><div></div><button class="btn btn-p" onclick="go(2)">Weiter →</button></div>
+</div>
+
+<!-- ═══════════════════════════ STEP 2: KONTAKTPERSON ═══════════════════════════ -->
+<div class="panel" id="s2">
+  <div class="card">
+    <div class="ctitle">📞 2. Kontaktperson / Bevollmächtigte</div>
+    <div class="voice-bar">
+      <div>
+        <div class="vb-label">🎙️ Freidiktat – Schritt 2</div>
+        <div class="vb-hint">z. B. „Kontaktperson ist Thomas Müller, Sohn, Telefon 0176 12345678"</div>
+        <div class="transcript-box" id="tr2"></div>
+      </div>
+      <button class="btn-mic" id="mic2" onclick="startDiktat(2)">
+        <span class="mic-icon">🎙️</span>
+        <span class="mic-text">Sprechen</span>
+        <div class="mic-wave"><span></span><span></span><span></span><span></span><span></span></div>
+      </button>
+    </div>
+    <div class="ibox">Bitte beide Spalten ausfüllen, soweit vorhanden. Feld <strong>Beziehung</strong> = z. B. Tochter, Sohn, Ehepartner.</div>
+    <table class="dtab">
+      <thead><tr><th></th><th>Anrufer / Bevollmächtigung</th><th>Kontaktperson / Bevollmächtigung</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Name, Vorname</strong></td>
+          <td><input class="field" id="kp1_name" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td>
+          <td><input class="field" id="kp2_name" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td></tr>
+        <tr><td><strong>Straße, Hausnr.</strong></td>
+          <td><input id="kp1_str" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td>
+          <td><input id="kp2_str" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td></tr>
+        <tr><td><strong>PLZ, Ort</strong></td>
+          <td><input id="kp1_ort" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td>
+          <td><input id="kp2_ort" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td></tr>
+        <tr><td><strong>Telefon</strong></td>
+          <td><input id="kp1_tel" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td>
+          <td><input id="kp2_tel" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td></tr>
+        <tr><td><strong>Mobil</strong></td>
+          <td><input id="kp1_mob" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td>
+          <td><input id="kp2_mob" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td></tr>
+        <tr><td><strong>E-Mail</strong></td>
+          <td><input id="kp1_mail" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td>
+          <td><input id="kp2_mail" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td></tr>
+        <tr><td><strong>Beziehung</strong></td>
+          <td><input id="kp1_bez" placeholder="z. B. Tochter" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td>
+          <td><input id="kp2_bez" style="width:100%;padding:5px 8px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.82rem;background:var(--bg);" oninput="sync()"></td></tr>
+      </tbody>
+    </table>
+    <div class="sdiv" style="margin-top:18px;">Vollmachten / Benachrichtigung</div>
+    <div class="g2" style="gap:10px;">
+      <div>
+        <div style="font-size:.75rem;font-weight:700;color:var(--txt2);margin-bottom:8px;">Anrufer / Bevollmächtigte</div>
+        <div class="cbgroup" id="voll1cbs">
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Vorsorgevollmacht"> Vorsorgevollmacht</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Patientenverfügung"> Patientenverfügung</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Generalvollmacht"> Generalvollmacht</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Betreuer"> Betreuer</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Sorgeberechtigter"> Sorgeberechtigter</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Post/Email"> Post / E-Mail</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Termine"> Termine</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Notfall"> Notfall</label>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.75rem;font-weight:700;color:var(--txt2);margin-bottom:8px;">Kontaktperson / Bevollmächtigte</div>
+        <div class="cbgroup">
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Vorsorgevollmacht"> Vorsorgevollmacht</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Patientenverfügung"> Patientenverfügung</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Generalvollmacht"> Generalvollmacht</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Betreuer"> Betreuer</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Sorgeberechtigter"> Sorgeberechtigter</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Post/Email"> Post / E-Mail</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Termine"> Termine</label>
+          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Notfall"> Notfall</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="nav"><button class="btn btn-s" onclick="go(1)">← Zurück</button><button class="btn btn-p" onclick="go(3)">Weiter →</button></div>
+</div>
+
+<!-- ═══════════════════════════ STEP 3: PFLEGEKASSE ═══════════════════════════ -->
+<div class="panel" id="s3">
+  <div class="card">
+    <div class="ctitle">🏛️ 3. Pflegekasse / Versicherung</div>
+    <div class="voice-bar">
+      <div>
+        <div class="vb-label">🎙️ Freidiktat – Schritt 3</div>
+        <div class="vb-hint">z. B. „AOK Bayern, Versichertennummer A12345, Pflegegrad 2 seit Januar 2023"</div>
+        <div class="transcript-box" id="tr3"></div>
+      </div>
+      <button class="btn-mic" id="mic3" onclick="startDiktat(3)">
+        <span class="mic-icon">🎙️</span>
+        <span class="mic-text">Sprechen</span>
+        <div class="mic-wave"><span></span><span></span><span></span><span></span><span></span></div>
+      </button>
+    </div>
+    <div class="g2">
+      <div class="field full">
+        <label>Pflegekasse <span class="req">*</span></label>
+        <div class="field-wrap">
+          <input id="pk_name" placeholder="z. B. AOK Bayern" oninput="sync()">
+          <button class="mic-field-btn" title="Sprechen" onclick="startFieldMic('pk_name',this)">🎙️</button>
+        </div>
+      </div>
+      <div class="field full">
+        <label>Adresse der Pflegekasse</label>
+        <input id="pk_adr" placeholder="Straße, PLZ Ort" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>Versicherten-Nr.</label>
+        <input id="pk_vnr" placeholder="A123456789" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>Privat versichert – Vs-Nr.</label>
+        <input id="pk_privnr" oninput="sync()">
+      </div>
+      <div class="field full">
+        <label>Beihilfe</label>
+        <input id="pk_beih" oninput="sync()">
+      </div>
+    </div>
+    <div class="sdiv">Pflegegrad</div>
+    <div class="rbh" id="pgGroup">
+      <label class="rbhi"><input type="radio" name="pg" value="1" onchange="sync()"> PG 1</label>
+      <label class="rbhi"><input type="radio" name="pg" value="2" onchange="sync()"> PG 2</label>
+      <label class="rbhi"><input type="radio" name="pg" value="3" onchange="sync()"> PG 3</label>
+      <label class="rbhi"><input type="radio" name="pg" value="4" onchange="sync()"> PG 4</label>
+      <label class="rbhi"><input type="radio" name="pg" value="5" onchange="sync()"> PG 5</label>
+    </div>
+    <div class="g2" style="margin-top:12px;">
+      <div class="field">
+        <label>Pflegegrad seit</label>
+        <input type="date" id="pg_seit" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>Pflegegrad angemessen?</label>
+        <div class="rbh" style="margin-top:6px;">
+          <label class="rbhi"><input type="radio" name="pg_ang" value="ja" onchange="sync()"> Ja</label>
+          <label class="rbhi"><input type="radio" name="pg_ang" value="nein" onchange="sync()"> Nein</label>
+        </div>
+      </div>
+      <div class="field full">
+        <label>MDK-Gutachten liegt vor</label>
+        <div class="rbh" style="margin-top:6px;">
+          <label class="rbhi"><input type="radio" name="mdk" value="ja" onchange="sync()"> Ja</label>
+          <label class="rbhi"><input type="radio" name="mdk" value="nein" onchange="sync()"> Nein</label>
+          <label class="rbhi"><input type="radio" name="mdk" value="angefordert" onchange="sync()"> Angefordert</label>
+        </div>
+      </div>
+      <div class="field full">
+        <label>Beratung §37.3 und Höherstufungsantrag angeboten?</label>
+        <div class="rbh" style="margin-top:6px;">
+          <label class="rbhi"><input type="radio" name="hoe" value="ja" onchange="sync()"> Ja</label>
+          <label class="rbhi"><input type="radio" name="hoe" value="nein" onchange="sync()"> Nein</label>
+          <label class="rbhi"><input type="radio" name="hoe" value="abgelehnt" onchange="sync()"> Abgelehnt</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="nav"><button class="btn btn-s" onclick="go(2)">← Zurück</button><button class="btn btn-p" onclick="go(4)">Weiter →</button></div>
+</div>
+
+<!-- ═══════════════════════════ STEP 4: BEDARF & DIAGNOSEN ═══════════════════════════ -->
+<div class="panel" id="s4">
+  <div class="card">
+    <div class="ctitle">🩺 4. Diagnosen / Einsatzmerkmale</div>
+    <div class="voice-bar">
+      <div>
+        <div class="vb-label">🎙️ Freidiktat – Schritt 4</div>
+        <div class="vb-hint">z. B. „Demenz, Diabetes, 168 cm, 72 kg, Klient raucht, braucht Grundpflege und Einkaufen"</div>
+        <div class="transcript-box" id="tr4"></div>
+      </div>
+      <button class="btn-mic" id="mic4" onclick="startDiktat(4)">
+        <span class="mic-icon">🎙️</span>
+        <span class="mic-text">Sprechen</span>
+        <div class="mic-wave"><span></span><span></span><span></span><span></span><span></span></div>
+      </button>
+    </div>
+    <div class="g2">
+      <div class="field">
+        <label>Größe (cm)</label>
+        <input id="d_groesse" placeholder="170" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>Gewicht (kg)</label>
+        <input id="d_gewicht" placeholder="70" oninput="sync()">
+      </div>
+      <div class="field full">
+        <label>Pflegerelevante Diagnosen</label>
+        <textarea id="d_diag" placeholder="z. B. Demenz, Diabetes Typ 2 …" oninput="sync()"></textarea>
+      </div>
+      <div class="field full">
+        <label>Wunden</label>
+        <input id="d_wunden" oninput="sync()">
+      </div>
+      <div class="field full">
+        <label>Infektionskrankheiten / MRSA</label>
+        <input id="d_infekt" oninput="sync()">
+      </div>
+    </div>
+    <div class="sdiv">Einsatzmerkmale</div>
+    <div class="cbgrid">
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="BK männlich"> BK männlich</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="BK weiblich"> BK weiblich</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="BK Führerschein"> BK Führerschein</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="BK Auto"> BK Auto</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Rollstuhlfahrer"> Rollstuhlfahrer</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Klient raucht"> Klient raucht</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="BK Nichtraucher"> BK Nichtraucher</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Messi-Wohnung"> Messi-Wohnung</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Hund"> Hund</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Allergie Hund"> Allergie Hund</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Katze"> Katze</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Allergie Katze"> Allergie Katze</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Grundpflege"> Grundpflege</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Duschen"> Duschen</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Baden"> Baden</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Inkontinenzversorgung"> Inkontinenzversorgung</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Einkaufen"> Einkaufen</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Kochen"> Kochen</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="em" value="Putzen"> Putzen</label>
+    </div>
+    <div class="sdiv">Was ist gewünscht?</div>
+    <div class="cbgrid">
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="wg" value="Hilfe bei der Haushaltsführung"> Hilfe bei Haushaltsführung</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="wg" value="pflegerische Betreuungsmaßnahme"> Pflegerische Betreuung</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="wg" value="körperbezogene Pflegemaßnahmen"> Körperbezogene Pflege</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="wg" value="Antrag auf Höherstufung"> Antrag Höherstufung</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="wg" value="Beratungsgespräch §37.3"> Beratungsgespräch §37.3</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="wg" value="Wohnumfeldanalyse + Hilfsmittelberatung"> Wohnumfeldanalyse</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="wg" value="Hausnotruf"> Hausnotruf</label>
+      <label class="cbi" onclick="tc(this)"><input type="checkbox" name="wg" value="Pflegehilfsmittelbox + Schlüsselübergabe"> Pflegehilfsmittelbox</label>
+    </div>
+    <div class="sdiv">Andere Dienstleister</div>
+    <div class="g2">
+      <div class="field full">
+        <label>Dienstleistungen über SGB XI bereits durch</label>
+        <input id="d_andere" placeholder="Name des Dienstleisters" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>Grundlage / Summe ca.</label>
+        <input id="d_summe" oninput="sync()">
+      </div>
+    </div>
+  </div>
+  <div class="nav"><button class="btn btn-s" onclick="go(3)">← Zurück</button><button class="btn btn-p" onclick="go(5)">Weiter →</button></div>
+</div>
+
+<!-- ═══════════════════════════ STEP 5: LEISTUNGEN ═══════════════════════════ -->
+<div class="panel" id="s5">
+  <div class="card">
+    <div class="ctitle">📋 5. Abrechnungsleistungen</div>
+    <div class="voice-bar">
+      <div>
+        <div class="vb-label">🎙️ Freidiktat – Schritt 5</div>
+        <div class="vb-hint">z. B. „Kombinationsleistung, Leistung ab 1. Februar, Paket M"</div>
+        <div class="transcript-box" id="tr5"></div>
+      </div>
+      <button class="btn-mic" id="mic5" onclick="startDiktat(5)">
+        <span class="mic-icon">🎙️</span>
+        <span class="mic-text">Sprechen</span>
+        <div class="mic-wave"><span></span><span></span><span></span><span></span><span></span></div>
+      </button>
+    </div>
+    <div class="ibox"><strong>Wichtig:</strong> Die hier gewählten Leistungen bestimmen welche Antragsformulare ausgedruckt werden.</div>
+
+    <div class="sdiv">Beantragte Leistungsart (Änderungsantrag)</div>
+    <div class="rbgroup">
+      <label class="rbi" onclick="sr(this)"><input type="radio" name="lst" value="Pflegesachleistung">
+        <div><div class="rbl">Pflegesachleistung</div><div class="rbs">§36 SGB XI</div></div></label>
+      <label class="rbi" onclick="sr(this)"><input type="radio" name="lst" value="Kombinationsleistung">
+        <div><div class="rbl">Kombinationsleistung</div><div class="rbs">§38 SGB XI</div></div></label>
+      <label class="rbi" onclick="sr(this)"><input type="radio" name="lst" value="Verhinderungspflege">
+        <div><div class="rbl">Verhinderungspflege</div><div class="rbs">§39 SGB XI</div></div></label>
+      <label class="rbi" onclick="sr(this)"><input type="radio" name="lst" value="Gemeinsamer Jahresbetrag">
+        <div><div class="rbl">Gemeinsamer Jahresbetrag</div><div class="rbs">§42a SGB XI</div></div></label>
+    </div>
+
+    <div class="field" style="margin-top:14px;max-width:240px;">
+      <label>Leistung ab dem <span class="req">*</span></label>
+      <input type="date" id="lst_ab" oninput="sync()">
+    </div>
+
+    <div class="sdiv">Vollmacht – bevollmächtigte Budgets</div>
+    <div class="cbgroup">
+      <label class="cbi ck" onclick="tc(this)"><input type="checkbox" name="vm" value="Entlastungsleistungen" checked> Entlastungsleistungen</label>
+      <label class="cbi ck" onclick="tc(this)"><input type="checkbox" name="vm" value="Verhinderungspflege" checked> Verhinderungspflege</label>
+      <label class="cbi ck" onclick="tc(this)"><input type="checkbox" name="vm" value="Kurzzeitpflege" checked> Kurzzeitpflege</label>
+      <label class="cbi ck" onclick="tc(this)"><input type="checkbox" name="vm" value="Pflegesachleistung" checked> Pflegesachleistung</label>
+      <label class="cbi ck" onclick="tc(this)"><input type="checkbox" name="vm" value="den aktuellen Pflegegrad" checked> Aktuellen Pflegegrad</label>
+    </div>
+
+    <div class="field" style="margin-top:14px;max-width:240px;">
+      <label>Abtretung: Abrechnung ab</label>
+      <input type="date" id="abtr_ab" oninput="sync()">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">📦 Betreuungspaket (optional)</div>
+    <div class="ibox">Wählen Sie das passende Paket aus – wird im Erstgespräch-Dokument vermerkt.</div>
+    <div class="pakgrid" id="pakgrid">
+      <div class="pak" onclick="selPak(this,'S','ca. 109,80 €/Woche · 2 Std.')"><div class="pname">Paket S</div><div class="pstd">2 Std. / Woche</div><div class="ppreis">ca. 109,80 €</div></div>
+      <div class="pak" onclick="selPak(this,'M','ca. 213,36 €/Woche · 4 Std.')"><div class="pname">Paket M</div><div class="pstd">4 Std. / Woche</div><div class="ppreis">ca. 213,36 €</div></div>
+      <div class="pak" onclick="selPak(this,'L','ca. 316,92 €/Woche · 6 Std.')"><div class="pname">Paket L</div><div class="pstd">6 Std. / Woche</div><div class="ppreis">ca. 316,92 €</div></div>
+      <div class="pak" onclick="selPak(this,'XL','ab 420,48 €/Woche · 8+ Std.')"><div class="pname">Paket XL</div><div class="pstd">8+ Std. / Woche</div><div class="ppreis">ab 420,48 €</div></div>
+      <div class="pak" onclick="selPak(this,'S+','ca. 118,68 €/Woche · 2 Std. + Körperpflege')"><div class="pname">Paket S+</div><div class="pstd">2 Std. + Körperpflege</div><div class="ppreis">ca. 118,68 €</div></div>
+      <div class="pak" onclick="selPak(this,'M+','ca. 231,12 €/Woche · 4 Std. + Körperpflege')"><div class="pname">Paket M+</div><div class="pstd">4 Std. + Körperpflege</div><div class="ppreis">ca. 231,12 €</div></div>
+      <div class="pak" onclick="selPak(this,'L+','ca. 343,56 €/Woche · 6 Std. + Körperpflege')"><div class="pname">Paket L+</div><div class="pstd">6 Std. + Körperpflege</div><div class="ppreis">ca. 343,56 €</div></div>
+      <div class="pak" onclick="selPak(this,'XL+','ab 456,00 €/Woche · 8+ Std. + Körperpflege')"><div class="pname">Paket XL+</div><div class="pstd">8+ Std. + Körperpflege</div><div class="ppreis">ab 456,00 €</div></div>
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label>Einsatzzeiten</label>
+      <div class="rbh" style="margin-top:6px;">
+        <label class="rbhi"><input type="checkbox" name="ez" value="Vormittags (ca. 8–12 Uhr)"> Vormittags</label>
+        <label class="rbhi"><input type="checkbox" name="ez" value="Nachmittags (ca. 12–17 Uhr)"> Nachmittags</label>
+        <label class="rbhi"><input type="checkbox" name="ez" value="Abends (ca. 17–20 Uhr)"> Abends</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav"><button class="btn btn-s" onclick="go(4)">← Zurück</button><button class="btn btn-p" onclick="go(6)">Weiter →</button></div>
+</div>
+
+<!-- ═══════════════════════════ STEP 6: BANK / SEPA ═══════════════════════════ -->
+<div class="panel" id="s6">
+  <div class="card">
+    <div class="ctitle">🏦 6. Bankverbindung & SEPA</div>
+    <div class="voice-bar">
+      <div>
+        <div class="vb-label">🎙️ Freidiktat – Schritt 6</div>
+        <div class="vb-hint">z. B. „Sparkasse Landsberg, IBAN DE12 3456 7890, BIC BYLADEM1LLD, Kontoinhaber Thomas Müller"</div>
+        <div class="transcript-box" id="tr6"></div>
+      </div>
+      <button class="btn-mic" id="mic6" onclick="startDiktat(6)">
+        <span class="mic-icon">🎙️</span>
+        <span class="mic-text">Sprechen</span>
+        <div class="mic-wave"><span></span><span></span><span></span><span></span><span></span></div>
+      </button>
+    </div>
+    <div class="ibox">Diese Daten werden in den <strong>Änderungsantrag</strong> und das <strong>SEPA-Mandat</strong> der AS Abrechnungsstelle übertragen.</div>
+    <div class="sdiv">Versicherter / Patient (für SEPA)</div>
+    <div class="g2">
+      <div class="field full">
+        <label>Name (Versicherter / Patient)</label>
+        <input id="s_vpname" placeholder="wird aus Schritt 1 übernommen" oninput="sync()">
+      </div>
+      <div class="field full">
+        <label>Straße, Hausnr., PLZ, Ort</label>
+        <input id="s_vpadr" placeholder="wird aus Schritt 1 übernommen" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>KV-Nummer</label>
+        <input id="s_kvnr" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>Kundennummer (AS AG, falls vorhanden)</label>
+        <input id="s_kdnr" oninput="sync()">
+      </div>
+    </div>
+    <div class="sdiv">Kontoinhaber / Zahler <small style="font-weight:400;text-transform:none;letter-spacing:0;">(falls abweichend)</small></div>
+    <div class="g2">
+      <div class="field full">
+        <label>Name des Kontoinhabers</label>
+        <input id="s_kiname" placeholder="falls abweichend vom Versicherten" oninput="sync()">
+      </div>
+      <div class="field full">
+        <label>Adresse Kontoinhaber</label>
+        <input id="s_kiadr" oninput="sync()">
+      </div>
+    </div>
+    <div class="sdiv">Kontodaten</div>
+    <div class="g2">
+      <div class="field full">
+        <label>Kreditinstitut</label>
+        <input id="s_bank" placeholder="z. B. Sparkasse Landsberg-Dießen" oninput="sync()">
+      </div>
+      <div class="field full">
+        <label>IBAN <span class="req">*</span></label>
+        <div class="field-wrap">
+          <input id="s_iban" placeholder="DE00 0000 0000 0000 0000 00" oninput="sync()">
+          <button class="mic-field-btn" title="Sprechen" onclick="startFieldMic('s_iban',this)">🎙️</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>BIC</label>
+        <input id="s_bic" placeholder="BYLADEM1LLD" oninput="sync()">
+      </div>
+    </div>
+    <div class="sdiv">SEPA-Zahlungsart</div>
+    <div class="rbh">
+      <label class="rbhi"><input type="radio" name="sepa_art" value="einmalig" onchange="sync()"> Einmalige Zahlung</label>
+      <label class="rbhi ck"><input type="radio" name="sepa_art" value="wiederkehrend" checked onchange="sync()"> Wiederkehrende Zahlungen</label>
+    </div>
+    <div class="sdiv" style="margin-top:18px;">Pflegeperson (für Änderungsantrag, falls vorhanden)</div>
+    <div class="g2">
+      <div class="field">
+        <label>Name Pflegeperson</label>
+        <input id="pp_name" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>Vorname Pflegeperson</label>
+        <input id="pp_vname" oninput="sync()">
+      </div>
+      <div class="field full">
+        <label>Adresse</label>
+        <input id="pp_adr" oninput="sync()">
+      </div>
+      <div class="field">
+        <label>Telefon</label>
+        <input id="pp_tel" oninput="sync()">
+      </div>
+    </div>
+  </div>
+  <div class="nav"><button class="btn btn-s" onclick="go(5)">← Zurück</button><button class="btn btn-p" onclick="go(7)">Weiter →</button></div>
+</div>
+
+<!-- ═══════════════════════════ STEP 7: ÜBERSICHT ═══════════════════════════ -->
+<div class="panel" id="s7">
+  <div class="card">
+    <div class="ctitle">🔍 7. Zusammenfassung</div>
+    <div id="rev7"></div>
+  </div>
+  <div class="card">
+    <div class="ctitle">📄 Dokumente die erstellt werden</div>
+    <div class="dprev"><h3>Erstgespräch <span class="dbadge">Seite 1–2</span></h3><table class="ptab" id="pr_eg"></table></div>
+    <div class="dprev"><h3>Vollmacht Budgetabfrage <span class="dbadge">1</span></h3><table class="ptab" id="pr_vm"></table></div>
+    <div class="dprev"><h3>Abtretungserklärung §45b/§39 <span class="dbadge">2</span></h3><table class="ptab" id="pr_at"></table></div>
+    <div class="dprev"><h3>Änderungsantrag ambulante Pflegeleistung <span class="dbadge">3</span></h3><table class="ptab" id="pr_ae"></table></div>
+    <div class="dprev"><h3>EU Einwilligungserklärung / Schweigepflicht <span class="dbadge">4</span></h3><table class="ptab" id="pr_eu"></table></div>
+    <div class="dprev"><h3>SEPA-Lastschriftmandat <span class="dbadge">5</span></h3><table class="ptab" id="pr_sp"></table></div>
+  </div>
+  <div class="nav"><button class="btn btn-s" onclick="go(6)">← Zurück</button><button class="btn btn-p" onclick="go(8)">Zur Unterschrift →</button></div>
+</div>
+
+<!-- ═══════════════════════════ STEP 8: UNTERSCHRIFT ═══════════════════════════ -->
+<div class="panel" id="s8">
+  <div class="card">
+    <div class="ctitle">✍️ 8. Unterschrift</div>
+    <div class="ibox">Mit dieser <strong>einmaligen Unterschrift</strong> werden alle 5 Formulare plus das Erstgespräch-Protokoll rechtsgültig unterzeichnet.</div>
+    <div class="g2" style="margin-bottom:14px;">
+      <div class="field">
+        <label>Ort <span class="req">*</span></label>
+        <input id="sig_ort" value="Landsberg am Lech">
+      </div>
+      <div class="field">
+        <label>Datum <span class="req">*</span></label>
+        <input type="date" id="sig_dat">
+      </div>
+      <div class="field full">
+        <label>Erstgespräch durchgeführt von</label>
+        <input id="eg_von" placeholder="Name des Mitarbeiters / der Mitarbeiterin">
+      </div>
+    </div>
+    <div class="sigwrap">
+      <canvas id="sigCanvas" height="170"></canvas>
+      <div class="sighint" id="sighint">✍️ Hier unterschreiben<br><small>Finger oder Maus</small></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-s btn-sm" onclick="clrSig()">✕ Löschen</button>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn btn-s" onclick="go(7)">← Zurück</button>
+    <button class="btn btn-p" onclick="finish()">📄 Alle Dokumente fertigstellen</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ STEP 9: FERTIG ═══════════════════════════ -->
+<div class="panel" id="s9">
+  <div class="card">
+    <div class="succ">
+      <div class="si">✅</div>
+      <h2>Erstgespräch abgeschlossen!</h2>
+      <p>Alle Dokumente wurden ausgefüllt und mit der Unterschrift versehen. Bitte jetzt ausdrucken.</p>
+      <div class="ddlist">
+        <button class="ddbtn" onclick="pDoc('eg')"><span>📋 Erstgespräch (Seite 1 &amp; 2)</span><span class="di">🖨️</span></button>
+        <button class="ddbtn" onclick="pDoc('vm')"><span>📄 Vollmacht Budgetabfrage</span><span class="di">🖨️</span></button>
+        <button class="ddbtn" onclick="pDoc('at')"><span>📄 Abtretungserklärung</span><span class="di">🖨️</span></button>
+        <button class="ddbtn" onclick="pDoc('ae')"><span>📄 Änderungsantrag Pflegeleistung</span><span class="di">🖨️</span></button>
+        <button class="ddbtn" onclick="pDoc('eu')"><span>📄 EU Einwilligungserklärung</span><span class="di">🖨️</span></button>
+        <button class="ddbtn" onclick="pDoc('sepa')"><span>📄 SEPA-Lastschriftmandat</span><span class="di">🖨️</span></button>
+        <button class="ddbtn all" onclick="pDoc('alle')"><span><strong>📦 Alle 6 Dokumente drucken</strong></span><span class="di">🖨️</span></button>
+      </div>
+      <button class="btn btn-s" onclick="reset()">🔄 Neues Erstgespräch starten</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────
+let cur=1, sigData=null, hasSig=false, selPaket='', selPaketDesc='';
+
+const FIRMA={name:'KM Fürsorge GmbH',ik:'462938187',adr:'Hauptplatz 150, 86899 Landsberg am Lech',tel:'08191 93692 80',fax:'08191 93692 99',mail:'LL@homecare-alltagshelfer.de'};
+
+// ─── HELPERS ─────────────────────────────────────────────────────
+const g=id=>document.getElementById(id);
+const v=id=>{const e=g(id);return e?e.value.trim():'';}
+const rb=name=>{const r=document.querySelector(`input[name="${name}"]:checked`);return r?r.value:'';}
+const cbs=name=>[...document.querySelectorAll(`input[name="${name}"]:checked`)].map(c=>c.value);
+function fd(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}.${y}`;}
+function getAdresse(){return [v('k_str'),[v('k_plz'),v('k_ort')].filter(Boolean).join(' ')].filter(Boolean).join(', ');}
+
+function sync(){
+  document.querySelectorAll('input[type=text],input[type=date],input[type=email],input[type=tel],textarea,select').forEach(e=>{
+    if(e.value.trim())e.classList.add('filled'); else e.classList.remove('filled');
+  });
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────
+function go(n){
+  if(n>cur&&!validate(cur))return;
+  g('s'+cur).classList.remove('active');
+  if(n===9){g('s9').classList.add('active');}else{g('s'+n).classList.add('active');}
+  document.querySelectorAll('.stab').forEach(t=>{
+    const s=parseInt(t.dataset.s);
+    t.classList.remove('active','done');
+    if(s===n)t.classList.add('active');
+    else if(s<n)t.classList.add('done');
+  });
+  cur=n;
+  if(n===7)buildReview();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function validate(s){
+  if(s===1){
+    const req=['k_name','k_str','k_plz','k_ort','k_geb'];
+    let ok=true;
+    req.forEach(id=>{const e=g(id);if(!e.value.trim()){e.classList.add('bad');ok=false;}else e.classList.remove('bad');});
+    if(!ok){alert('Bitte alle Pflichtfelder in Schritt 1 ausfüllen.');return false;}
+  }
+  if(s===3){
+    const e=g('pk_name');
+    if(!e.value.trim()){e.classList.add('bad');alert('Bitte den Namen der Pflegekasse eingeben.');return false;}
+    e.classList.remove('bad');
+  }
+  return true;
+}
+
+// ─── CHECKBOX / RADIO UI ─────────────────────────────────────────
+function tc(el){setTimeout(()=>{const cb=el.querySelector('input');el.classList.toggle('ck',cb.checked);},0);}
+function sr(el){document.querySelectorAll('.rbi').forEach(r=>r.classList.remove('ck'));setTimeout(()=>el.classList.add('ck'),0);}
+
+// init checked state
+document.querySelectorAll('.cbi input[type=checkbox]').forEach(cb=>{if(cb.checked)cb.closest('.cbi').classList.add('ck');});
+document.querySelectorAll('.rbhi input[type=radio]').forEach(r=>{if(r.checked)r.closest('.rbhi').classList.add('ck');});
+document.querySelectorAll('.rbhi input[type=radio]').forEach(r=>r.addEventListener('change',function(){
+  document.querySelectorAll(`.rbhi input[name="${this.name}"]`).forEach(x=>x.closest('.rbhi').classList.remove('ck'));
+  if(this.checked)this.closest('.rbhi').classList.add('ck');
+}));
+
+function selPak(el,name,desc){
+  document.querySelectorAll('.pak').forEach(p=>p.classList.remove('sel'));
+  el.classList.add('sel');
+  selPaket=name; selPaketDesc=desc;
+}
+
+// ─── REVIEW ──────────────────────────────────────────────────────
+function rows(arr){return arr.map(([k,v])=>`<tr><td>${k}</td><td>${v||'–'}</td></tr>`).join('');}
+
+function buildReview(){
+  g('rev7').innerHTML=`<div class="rg">
+    <div class="ri"><div class="rl">Name</div><div class="rv">${v('k_name')}</div></div>
+    <div class="ri"><div class="rl">Geburtsdatum</div><div class="rv">${fd(v('k_geb'))}</div></div>
+    <div class="ri"><div class="rl">Adresse</div><div class="rv">${getAdresse()}</div></div>
+    <div class="ri"><div class="rl">Pflegekasse</div><div class="rv">${v('pk_name')}</div></div>
+    <div class="ri"><div class="rl">Versicherten-Nr.</div><div class="rv">${v('pk_vnr')}</div></div>
+    <div class="ri"><div class="rl">Pflegegrad</div><div class="rv">${rb('pg')||'–'}</div></div>
+    <div class="ri"><div class="rl">Leistungsart</div><div class="rv">${rb('lst')||'–'}</div></div>
+    <div class="ri"><div class="rl">Paket</div><div class="rv">${selPaket||'–'}</div></div>
+    <div class="ri"><div class="rl">IBAN</div><div class="rv">${v('s_iban')||'–'}</div></div>
+  </div>`;
+
+  g('pr_eg').innerHTML=rows([['Klient',v('k_name')],['Pflegegrad',rb('pg')],['Pflegekasse',v('pk_name')],['Gewünschte Leistungen',cbs('wg').join(', ')]]);
+  g('pr_vm').innerHTML=rows([['Klient',v('k_name')],['Pflegekasse',v('pk_name')],['Budgets',cbs('vm').join(', ')]]);
+  g('pr_at').innerHTML=rows([['Klient',v('k_name')],['Versicherten-Nr.',v('pk_vnr')],['Abrechnung ab',fd(v('abtr_ab'))]]);
+  g('pr_ae').innerHTML=rows([['Klient',v('k_name')],['Leistungsart',rb('lst')],['Ab dem',fd(v('lst_ab'))],['IBAN',v('s_iban')]]);
+  g('pr_eu').innerHTML=rows([['Name',v('k_name')],['Geburtsdatum',fd(v('k_geb'))],['Adresse',getAdresse()]]);
+  g('pr_sp').innerHTML=rows([['Versicherter',v('s_vpname')||v('k_name')],['IBAN',v('s_iban')],['BIC',v('s_bic')],['Zahlungsart',rb('sepa_art')]]);
+}
+
+// ─── SIGNATURE ───────────────────────────────────────────────────
+const canvas=g('sigCanvas'),ctx=canvas.getContext('2d');
+let drawing=false;
+
+function resizeSig(){
+  const ratio=window.devicePixelRatio||1;
+  const w=canvas.parentElement.getBoundingClientRect().width;
+  canvas.width=w*ratio; canvas.height=170*ratio;
+  canvas.style.width=w+'px'; canvas.style.height='170px';
+  ctx.scale(ratio,ratio);
+  ctx.strokeStyle='#1A1610'; ctx.lineWidth=2; ctx.lineCap='round'; ctx.lineJoin='round';
+}
+function pos(e){const r=canvas.getBoundingClientRect();
+  if(e.touches)return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
+  return{x:e.clientX-r.left,y:e.clientY-r.top};}
+
+canvas.addEventListener('mousedown',e=>{drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);});
+canvas.addEventListener('mousemove',e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();hasSig=true;g('sighint').style.display='none';});
+canvas.addEventListener('mouseup',()=>{drawing=false;if(hasSig)sigData=canvas.toDataURL();});
+canvas.addEventListener('mouseleave',()=>drawing=false);
+canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();hasSig=true;g('sighint').style.display='none';},{passive:false});
+canvas.addEventListener('touchend',()=>{drawing=false;if(hasSig)sigData=canvas.toDataURL();});
+
+function clrSig(){const r=window.devicePixelRatio||1;ctx.clearRect(0,0,canvas.width/r,canvas.height/r);hasSig=false;sigData=null;g('sighint').style.display='block';}
+
+g('sig_dat').value=new Date().toISOString().split('T')[0];
+window.addEventListener('load',resizeSig);
+window.addEventListener('resize',resizeSig);
+
+// ─── FINISH ──────────────────────────────────────────────────────
+function finish(){
+  if(!hasSig){alert('Bitte zunächst unterschreiben.');return;}
+  sigData=canvas.toDataURL();
+  // Autofill SEPA fields from Klient if empty
+  if(!v('s_vpname'))g('s_vpname').value=v('k_name');
+  if(!v('s_vpadr'))g('s_vpadr').value=getAdresse();
+  go(9);
+}
+
+// ─── PRINT DOCUMENTS ─────────────────────────────────────────────
+const css=`<style>
+body{font-family:Arial,sans-serif;font-size:10.5px;color:#111;padding:22px 28px;max-width:720px;margin:0 auto;}
+h2,h3{margin-bottom:8px;}table{width:100%;border-collapse:collapse;margin:6px 0 10px;}
+td,th{padding:5px 8px;border:1px solid #ccc;}th{background:#f0e8d8;font-weight:700;font-size:9px;letter-spacing:.05em;text-transform:uppercase;}
+.cbs{margin:4px 0;}p{margin:6px 0;font-size:10px;}
+@page{margin:14mm;} @media print{body{padding:6px;}}
+</style>`;
+
+function firmHeader(){return`<div style="font-size:8.5px;color:#666;margin-bottom:14px;">
+<strong>HOMECARE – Die Alltagshelfer · ${FIRMA.name}</strong> · IK ${FIRMA.ik} · ${FIRMA.adr} · Tel ${FIRMA.tel} · ${FIRMA.mail}
+</div>`;}
+
+function sigBlock(label='Ort, Datum und Unterschrift'){
+  const ort=v('sig_ort')||'Landsberg am Lech';
+  const dat=fd(v('sig_dat'))||fd(new Date().toISOString().split('T')[0]);
+  return`<div style="margin-top:36px;display:flex;gap:50px;align-items:flex-end;">
+    <div><div style="border-bottom:1px solid #333;min-width:220px;padding-bottom:3px;margin-bottom:4px;">${ort}, den ${dat}</div><small>Ort, Datum</small></div>
+    <div><div style="border-bottom:1px solid #333;min-width:260px;padding-bottom:2px;margin-bottom:4px;">${sigData?`<img src="${sigData}" style="height:48px;display:block;">`:'&nbsp;'}</div><small>${label}</small></div>
+  </div>`;}
+
+function td(b,v){return`<td style="${b?'font-weight:700;background:#f8f2e8;':''}">${b?b:''}</td><td>${v||'&nbsp;'}</td>`;}
+
+// DOC: Erstgespräch
+function docEG(){
+  const em=cbs('em'),wg=cbs('wg'),v1=cbs('v1'),v2=cbs('v2');
+  const cbRow=(arr,val)=>arr.map(x=>`<div class="cbs">${x===val||arr.includes(x)?'☑':'☐'} ${x}</div>`).join('');
+  return`
+<h2 style="text-align:center;font-size:16px;">Erstgespräch</h2>
+<h3>1. KLIENT</h3>
+<table><tr>${td('Name, Vorname:',v('k_name'))}</tr>
+<tr><td style="font-weight:700;">Geburtsdatum:</td><td>${fd(v('k_geb'))}</td><td style="font-weight:700;">Geschlecht:</td><td>${rb('k_gesch')||'–'}</td></tr>
+<tr><td style="font-weight:700;">Straße, Hausnr.:</td><td>${v('k_str')}</td><td style="font-weight:700;">PLZ, Ort:</td><td>${v('k_plz')} ${v('k_ort')}</td></tr>
+<tr><td style="font-weight:700;">Telefon:</td><td>${v('k_tel')}</td><td style="font-weight:700;">Mobil:</td><td>${v('k_mob')}</td></tr>
+<tr>${td('E-Mail:',v('k_mail'))}</tr>
+<tr><td style="font-weight:700;">Familienstand:</td><td>${v('k_fam')}</td><td style="font-weight:700;">Personen im Haushalt:</td><td>${v('k_pers')}</td></tr>
+<tr>${td('Hausarzt:',v('k_arzt'))}</tr></table>
+
+<h3>2. KONTAKTPERSON</h3>
+<table><tr><th></th><th>Anrufer / Bevollmächtigung</th><th>Kontaktperson / Bevollmächtigung</th></tr>
+<tr><td><strong>Name, Vorname</strong></td><td>${v('kp1_name')}</td><td>${v('kp2_name')}</td></tr>
+<tr><td><strong>Adresse</strong></td><td>${v('kp1_str')}<br>${v('kp1_ort')}</td><td>${v('kp2_str')}<br>${v('kp2_ort')}</td></tr>
+<tr><td><strong>Telefon / Mobil</strong></td><td>${v('kp1_tel')} / ${v('kp1_mob')}</td><td>${v('kp2_tel')} / ${v('kp2_mob')}</td></tr>
+<tr><td><strong>E-Mail</strong></td><td>${v('kp1_mail')}</td><td>${v('kp2_mail')}</td></tr>
+<tr><td><strong>Vollmachten</strong></td><td style="font-size:9px;">${v1.join(', ')||'–'}</td><td style="font-size:9px;">${v2.join(', ')||'–'}</td></tr>
+<tr><td><strong>Beziehung</strong></td><td>${v('kp1_bez')}</td><td>${v('kp2_bez')}</td></tr></table>
+
+<h3>3. PFLEGEKASSE / VERSICHERTENKARTE</h3>
+<table><tr><td style="font-weight:700;">Pflegekasse:</td><td>${v('pk_name')}</td><td style="font-weight:700;">Vs-Nummer:</td><td>${v('pk_vnr')}</td></tr>
+<tr><td style="font-weight:700;">Pflegegrad:</td><td>${rb('pg')||'–'}</td><td style="font-weight:700;">seit:</td><td>${fd(v('pg_seit'))}</td></tr>
+<tr><td style="font-weight:700;">Angemessen:</td><td>${rb('pg_ang')||'–'}</td><td style="font-weight:700;">MDK-Gutachten:</td><td>${rb('mdk')||'–'}</td></tr></table>
+
+<div style="page-break-after:always;"></div>${firmHeader()}
+
+<h3>4. DIAGNOSEN / ALLERGIEN</h3>
+<table><tr><td style="font-weight:700;">Größe:</td><td>${v('d_groesse')} cm</td><td style="font-weight:700;">Gewicht:</td><td>${v('d_gewicht')} kg</td></tr>
+<tr>${td('Diagnosen:',v('d_diag'))}</tr>
+<tr>${td('Wunden:',v('d_wunden'))}</tr>
+<tr>${td('Infektionskrankheiten / MRSA:',v('d_infekt'))}</tr></table>
+
+<h3>5. EINSATZMERKMALE</h3>
+<div style="columns:2;gap:16px;font-size:9.5px;">${em.length?em.map(x=>`<div>☑ ${x}</div>`).join(''):'<p style="color:#999;">Keine Angabe</p>'}</div>
+
+<h3>6. WAS IST GEWÜNSCHT</h3>
+<div style="columns:2;gap:16px;font-size:9.5px;">${wg.length?wg.map(x=>`<div>☑ ${x}</div>`).join(''):'<p style="color:#999;">Keine Angabe</p>'}</div>
+${selPaket?`<p style="margin-top:8px;"><strong>Betreuungspaket:</strong> Paket ${selPaket} (${selPaketDesc})</p>`:''}
+
+<h3>7. ANDERE DIENSTLEISTER</h3>
+<p>${v('d_andere')||'–'} · Grundlage / Summe ca. ${v('d_summe')||'–'}</p>
+
+<h3>8. ABRECHNUNGSGRUNDLAGE BESPROCHEN</h3>
+<div style="font-size:9.5px;columns:2;gap:16px;">
+<div>☑ Budgetabfrage</div><div>☑ Abtretungserklärung besprochen</div>
+<div>${rb('lst')?'☑':'☐'} ${rb('lst')||'Antrag Pflegeleistung'}</div>
+<div>☑ EU Einwilligungserklärung</div><div>☑ SEPA-Mandat</div>
+</div>
+
+<h3>9. UNTERSCHRIFT</h3>
+<p>Erstgespräch durchgeführt von: <strong>${v('eg_von')||'_________________________________'}</strong></p>
+${sigBlock('Unterschrift / Kunde')}`;
+}
+
+// DOC: Vollmacht
+function docVM(){
+  const lst=cbs('vm').map(x=>`<div class="cbs">☑ ${x}</div>`).join('');
+  return`
+<h2 style="text-align:center;">VOLLMACHT ÜBER SCHRIFTLICHE UND TELEFONISCHE AUSKUNFT BEI DER PFLEGEKASSE</h2>
+<p style="text-align:center;font-size:9px;margin-bottom:16px;">Budgetabfrage an die Pflegekasse</p>
+<p style="font-weight:700;">Pflegekasse:</p>
+<div style="border:1px solid #ccc;padding:8px 12px;margin-bottom:14px;">${v('pk_name')||'&nbsp;'}<br>${v('pk_adr')||'&nbsp;'}</div>
+<p style="font-weight:700;">Daten des Pflegebedürftigen</p>
+<table><tr><td style="font-weight:700;">Name:</td><td>${v('k_name').split(',')[0]||'&nbsp;'}</td><td style="font-weight:700;">Vorname:</td><td>${v('k_name').split(',')[1]||'&nbsp;'}</td></tr>
+<tr><td style="font-weight:700;">Adresse:</td><td colspan="3">${getAdresse()}</td></tr>
+<tr><td style="font-weight:700;">Geburtsdatum:</td><td>${fd(v('k_geb'))}</td><td style="font-weight:700;">Versicherten-Nr.:</td><td>${v('pk_vnr')}</td></tr></table>
+<p>Sehr geehrte Damen und Herren, im Rahmen meiner häuslichen Versorgung bevollmächtige ich den ambulanten Pflegedienst <strong>${FIRMA.name}</strong> telefonisch und schriftlich Auskunft über meinen Anspruch auf folgende Leistungen direkt bei der zuständigen Pflegekasse einzuholen:</p>
+<div style="margin:10px 0;">${lst}</div>
+${sigBlock('Ort, Datum und Unterschrift')}`;
+}
+
+// DOC: Abtretungserklärung
+function docAT(){
+  return`
+<h2 style="text-align:center;">Abtretungserklärung</h2>
+<p style="text-align:center;">§45b, §39, §39(3) SGB XI</p>
+<p style="font-weight:700;margin-top:14px;">Hiermit trete ich:</p>
+<p style="font-weight:700;">Daten des Pflegebedürftigen</p>
+<table><tr><td style="font-weight:700;">Name:</td><td>${v('k_name').split(',')[0]}</td><td style="font-weight:700;">Vorname:</td><td>${v('k_name').split(',')[1]||''}</td></tr>
+<tr><td style="font-weight:700;">Adresse:</td><td colspan="3">${getAdresse()}</td></tr>
+<tr><td style="font-weight:700;">Geburtsdatum:</td><td>${fd(v('k_geb'))}</td><td style="font-weight:700;">Versicherten-Nr.:</td><td>${v('pk_vnr')}</td></tr></table>
+<p>widerruflich meinen Erstattungsanspruch für Leistungen nach §45b, §39, §39(3) SGB XI in Höhe der jeweils in Anspruch genommenen und von meinem Pflegedienst erbrachten Leistungen an diesen ab.</p>
+<p style="font-weight:700;margin-top:14px;">Pflegedienst</p>
+<table><tr><td style="font-weight:700;">Name:</td><td>${FIRMA.name}</td><td style="font-weight:700;">IK-Kennung:</td><td>${FIRMA.ik}</td></tr>
+<tr><td style="font-weight:700;">Adresse:</td><td>${FIRMA.adr}</td><td style="font-weight:700;">Telefon:</td><td>${FIRMA.tel}</td></tr>
+<tr><td style="font-weight:700;">Fax:</td><td>${FIRMA.fax}</td><td style="font-weight:700;">E-Mail:</td><td>${FIRMA.mail}</td></tr></table>
+<p>Der Pflegedienst darf direkt mit Ihnen abrechnen ab: <strong>${fd(v('abtr_ab'))||'_______________'}</strong></p>
+${sigBlock('Unterschrift Versicherter / gesetzl. Vertreter')}`;
+}
+
+// DOC: Änderungsantrag
+function docAE(){
+  const lst=rb('lst');
+  const opts=['Pflegesachleistung','Kombinationsleistung','Verhinderungspflege','Gemeinsamer Jahresbetrag'];
+  const lstRows=opts.map(o=>`<div class="cbs">${o===lst?'☑':'☐'} ${o}</div>`).join('');
+  return`
+<h2 style="text-align:center;">Änderungsantrag ambulante Pflegeleistung</h2>
+<p style="font-weight:700;">Daten des Pflegebedürftigen</p>
+<table><tr><td style="font-weight:700;">Name:</td><td>${v('k_name').split(',')[0]}</td><td style="font-weight:700;">Vorname:</td><td>${v('k_name').split(',')[1]||''}</td></tr>
+<tr><td style="font-weight:700;">Adresse:</td><td colspan="3">${getAdresse()}</td></tr>
+<tr><td style="font-weight:700;">Geburtsdatum:</td><td>${fd(v('k_geb'))}</td><td style="font-weight:700;">Versicherten-Nr.:</td><td>${v('pk_vnr')}</td></tr></table>
+<p>Hiermit beantrage ich ab dem <strong>${fd(v('lst_ab'))||'_______________'}</strong> folgende Pflegeleistungen:</p>
+<div style="margin:8px 0 14px;">${lstRows}</div>
+${v('pp_name')?`<p style="font-weight:700;">Meine private Pflegeperson ist:</p>
+<table><tr><td style="font-weight:700;">Name:</td><td>${v('pp_name')}</td><td style="font-weight:700;">Vorname:</td><td>${v('pp_vname')}</td></tr>
+<tr><td style="font-weight:700;">Adresse:</td><td colspan="3">${v('pp_adr')}</td></tr>
+<tr><td style="font-weight:700;">Telefon:</td><td colspan="3">${v('pp_tel')}</td></tr></table>`:''}
+${v('s_iban')?`<p style="font-weight:700;">Bankverbindung</p>
+<table><tr><td style="font-weight:700;">IBAN:</td><td colspan="3">${v('s_iban')}</td></tr>
+<tr><td style="font-weight:700;">BIC:</td><td>${v('s_bic')}</td><td style="font-weight:700;">Kontoinhaber:</td><td>${v('s_kiname')||v('k_name')}</td></tr></table>`:''}
+<p style="font-weight:700;">Pflegedienst</p>
+<table><tr><td style="font-weight:700;">Name:</td><td>${FIRMA.name}</td><td style="font-weight:700;">IK-Kennung:</td><td>${FIRMA.ik}</td></tr>
+<tr><td style="font-weight:700;">Adresse:</td><td>${FIRMA.adr}</td><td style="font-weight:700;">Telefon:</td><td>${FIRMA.tel}</td></tr>
+<tr><td style="font-weight:700;">Fax:</td><td>${FIRMA.fax}</td><td style="font-weight:700;">E-Mail:</td><td>${FIRMA.mail}</td></tr></table>
+<p style="font-size:9.5px;">Wenn ich bisher Pflegegeld bezogen habe, sollen Sie eventuell zu viel gezahlte Gelder mit den laufenden Leistungen verrechnen. Sollte dies nicht möglich sein, ist mir bewusst, dass ich zu viel erhaltenes Pflegegeld erstatten muss.</p>
+${sigBlock('Unterschrift Versicherter / gesetzl. Vertreter')}`;
+}
+
+// DOC: EU Einwilligungserklärung
+function docEU(){
+  const nm=v('k_name'), adr=getAdresse(), geb=fd(v('k_geb'));
+  return`
+<h2 style="text-align:center;">Einwilligungserklärung und Schweigepflichtentbindung</h2>
+<p style="text-align:center;font-size:9px;margin-bottom:14px;">gemäß Art. 6 (1) a DS-GVO</p>
+<table style="margin-bottom:14px;">
+<tr><td style="font-weight:700;width:50%;">Name, Vorname des Betroffenen / Patienten</td><td style="font-weight:700;width:50%;">ggf. Name, Vorname des gesetzl. Vertreters</td></tr>
+<tr><td style="min-height:28px;">${nm}</td><td>&nbsp;</td></tr>
+<tr><td style="font-weight:700;">Geburtsdatum</td><td style="font-weight:700;">ggf. Geburtsdatum des gesetzl. Vertreters</td></tr>
+<tr><td>${geb}</td><td>&nbsp;</td></tr>
+<tr><td style="font-weight:700;">Straße und Hausnr.</td><td style="font-weight:700;">ggf. Straße des gesetzl. Vertreters</td></tr>
+<tr><td>${v('k_str')}</td><td>&nbsp;</td></tr>
+<tr><td style="font-weight:700;">PLZ und Wohnort</td><td style="font-weight:700;">ggf. PLZ und Wohnort des gesetzl. Vertreters</td></tr>
+<tr><td>${v('k_plz')} ${v('k_ort')}</td><td>&nbsp;</td></tr></table>
+<p>Sehr geehrte Kundin, sehr geehrter Kunde, ich möchte die mir zur Verfügung stehende Zeit ganz Ihnen widmen. Daher beauftrage ich die <strong>AS Abrechnungsstelle für Heil-, Hilfs- und Pflegeberufe AG</strong>, Am Wall 96–98, 28195 Bremen (AS AG) mit der Abrechnungserstellung und dem Einzug von Forderungen für Selbstbeteiligungen/Privatleistungen.</p>
+<p>Nach vollständiger Aufklärung erkläre ich mich ausdrücklich einverstanden mit:</p>
+<div style="font-size:9.5px;margin:8px 0;">
+<div class="cbs">☑ Weitergabe der Behandlungsdaten (Rezept / Verordnung) an die AS AG, Am Wall 96–98, 28195 Bremen</div>
+<div class="cbs">☑ Abtretung der sich aus der Versorgung ergebenden Forderungen an die AS AG</div>
+<div class="cbs">☑ Einschaltung der Creditreform Bremen Dahlke KG als Inkassodienstleister bei Nichtzahlung</div>
+<div class="cbs">☑ Abtretung der Forderung der AS AG an refinanzierende Banken (keine Gesundheitsdaten)</div>
+</div>
+<p style="font-size:9.5px;">Diese Einwilligung gilt auch für zukünftige Versorgungen und kann jederzeit widerrufen werden. Streichungen und/oder Änderungen machen diese Erklärung unwirksam.</p>
+${sigBlock('Unterschrift des Betroffenen / Patienten oder des gesetzl. Vertreters')}
+<p style="margin-top:18px;font-size:9.5px;border-top:1px solid #ccc;padding-top:10px;">Ich entbinde meinen Leistungserbringer und die AS AG von ihrer Schweigepflicht nach §203 StGB gegenüber den oben genannten Stellen, soweit dies für die Abrechnung erforderlich ist.</p>
+${sigBlock('Unterschrift des Betroffenen / Patienten oder des gesetzl. Vertreters')}`;
+}
+
+// DOC: SEPA
+function docSEPA(){
+  const art=rb('sepa_art')||'wiederkehrend';
+  return`
+<h2 style="text-align:center;">SEPA-Mandat</h2>
+<p style="text-align:center;font-size:9.5px;margin-bottom:6px;"><strong>AS Abrechnungsstelle für Heil-, Hilfs- und Pflegeberufe AG</strong>, 28105 Bremen</p>
+<p style="font-size:9px;margin-bottom:14px;">Gläubiger-Identifikationsnummer: <strong>DE070AS00000034181</strong></p>
+<p style="font-weight:700;margin-bottom:8px;">SEPA-Lastschriftmandat</p>
+<p>Zahlungsart: ${art==='einmalig'?'<strong>☑ Einmalige Zahlung</strong>  ☐ Wiederkehrende Zahlungen':'☐ Einmalige Zahlung  <strong>☑ Wiederkehrende Zahlungen</strong>'}</p>
+<p style="margin:10px 0;font-size:9.5px;">Ich/wir ermächtige/n die AS Abrechnungsstelle für Heil-, Hilfs- und Pflegeberufe AG, Zahlungen von meinem/unserem Konto mittels Lastschrift einzuziehen. Es gilt eine Vorankündigungsfrist von zwei Tagen als vereinbart.</p>
+<table style="margin-top:10px;">
+<tr><td style="font-weight:700;width:50%;">Versicherter / Patient / Kunde</td><td style="font-weight:700;">ggf. KV-Nummer</td></tr>
+<tr><td>${v('s_vpname')||v('k_name')}</td><td>${v('s_kvnr')}</td></tr>
+<tr><td style="font-weight:700;">Straße, Hausnr., PLZ, Ort</td><td style="font-weight:700;">ggf. Kundennummer</td></tr>
+<tr><td>${v('s_vpadr')||getAdresse()}</td><td>${v('s_kdnr')}</td></tr>
+${v('s_kiname')?`<tr><td style="font-weight:700;">Kontoinhaber / Zahler (falls abweichend)</td><td></td></tr>
+<tr><td>${v('s_kiname')}</td><td></td></tr>
+<tr><td style="font-weight:700;">Adresse Kontoinhaber</td><td></td></tr>
+<tr><td>${v('s_kiadr')}</td><td></td></tr>`:''}
+<tr><td style="font-weight:700;">Kreditinstitut</td><td></td></tr>
+<tr><td>${v('s_bank')}</td><td></td></tr>
+<tr><td style="font-weight:700;">BIC</td><td style="font-weight:700;">IBAN</td></tr>
+<tr><td>${v('s_bic')}</td><td style="font-size:11px;font-weight:700;letter-spacing:.04em;">${v('s_iban')}</td></tr>
+</table>
+<p style="font-size:9px;margin-top:10px;">Hinweis: Ich kann innerhalb von acht Wochen, beginnend mit dem Belastungsdatum, die Erstattung des belasteten Betrages verlangen.</p>
+${sigBlock('Unterschrift/en des Kontoinhabers/Zahlers')}`;
+}
+
+function pDoc(which){
+  const pb=`<div style="page-break-after:always;"></div>`;
+  const wrap=content=>`<!DOCTYPE html><html><head><meta charset="UTF-8">${css}</head><body>${firmHeader()}${content}<div style="margin-top:24px;padding-top:8px;border-top:1px solid #ccc;font-size:8px;text-align:center;color:#777;">${FIRMA.name} · ${FIRMA.adr} · Tel ${FIRMA.tel} · IK ${FIRMA.ik}</div><script>window.onload=()=>window.print();<\/script></body></html>`;
+
+  let content='';
+  if(which==='eg')content=wrap(docEG());
+  else if(which==='vm')content=wrap(docVM());
+  else if(which==='at')content=wrap(docAT());
+  else if(which==='ae')content=wrap(docAE());
+  else if(which==='eu')content=wrap(docEU());
+  else if(which==='sepa')content=wrap(docSEPA());
+  else content=wrap(docEG()+pb+docVM()+pb+docAT()+pb+docAE()+pb+docEU()+pb+docSEPA());
+
+  const w=window.open('','_blank');
+  w.document.write(content);
+  w.document.close();
+}
+
+// ════════════════════════════════════════════════════════
+// VOICE INPUT SYSTEM
+// ════════════════════════════════════════════════════════
+
+// ── Toast helper ──────────────────────────────────────
+function showToast(msg, spin=false){
+  let t=document.getElementById('aiToast');
+  if(!t){t=document.createElement('div');t.id='aiToast';t.className='ai-toast';document.body.appendChild(t);}
+  t.innerHTML=(spin?'<div class="spin"></div>':'')+`<span>${msg}</span>`;
+  t.classList.add('show');
+}
+function hideToast(){const t=document.getElementById('aiToast');if(t)t.classList.remove('show');}
+
+// ── SpeechRecognition setup ───────────────────────────
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let activeRec=null;
+
+function startDiktat(step){
+  if(!SR){alert('Spracheingabe wird von diesem Browser nicht unterstützt.\nBitte Chrome oder Edge verwenden.');return;}
+  const micBtn=g('mic'+step);
+  const trBox=g('tr'+step);
+
+  // toggle off if already running
+  if(activeRec){activeRec.stop();activeRec=null;return;}
+
+  const rec=new SR();
+  rec.lang='de-DE';
+  rec.interimResults=true;
+  rec.maxAlternatives=1;
+  activeRec=rec;
+
+  micBtn.classList.add('listening');
+  micBtn.querySelector('.mic-text').textContent='Stopp';
+  micBtn.querySelector('.mic-icon').textContent='⏹️';
+  trBox.classList.add('show');
+  trBox.textContent='🎙️ Aufnahme läuft…';
+
+  let finalText='';
+
+  rec.onresult=e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal)finalText+=e.results[i][0].transcript+' ';
+      else interim+=e.results[i][0].transcript;
+    }
+    trBox.textContent=finalText||interim||'🎙️ Aufnahme läuft…';
+  };
+
+  rec.onerror=e=>{
+    stopMic(step);
+    if(e.error==='not-allowed')alert('Mikrofon-Zugriff wurde verweigert. Bitte Berechtigung erteilen.');
+    else if(e.error!=='aborted')alert('Fehler bei der Spracheingabe: '+e.error);
+  };
+
+  rec.onend=()=>{
+    activeRec=null;
+    stopMic(step);
+    if(finalText.trim())processWithAI(step, finalText.trim());
+  };
+
+  rec.start();
+}
+
+function stopMic(step){
+  const micBtn=g('mic'+step);
+  if(!micBtn)return;
+  micBtn.classList.remove('listening','loading');
+  micBtn.querySelector('.mic-text').textContent='Sprechen';
+  micBtn.querySelector('.mic-icon').textContent='🎙️';
+}
+
+// ── Per-field mic buttons ─────────────────────────────
+function startFieldMic(fieldId, btn){
+  if(!SR){alert('Spracheingabe wird nicht unterstützt. Bitte Chrome verwenden.');return;}
+  if(activeRec){activeRec.stop();activeRec=null;return;}
+
+  const rec=new SR();
+  rec.lang='de-DE';
+  rec.interimResults=false;
+  rec.maxAlternatives=1;
+  activeRec=rec;
+  btn.classList.add('listening');
+
+  rec.onresult=e=>{
+    const txt=e.results[0][0].transcript;
+    const el=g(fieldId);
+    if(el){el.value=txt;el.classList.add('filled');sync();}
+  };
+  rec.onerror=()=>{btn.classList.remove('listening');activeRec=null;};
+  rec.onend=()=>{btn.classList.remove('listening');activeRec=null;};
+  rec.start();
+}
+
+// ── Step-specific field maps ──────────────────────────
+const STEP_PROMPTS={
+  1:`Du bist ein Assistent für ein deutsches Pflegedienstformular. 
+Analysiere den folgenden gesprochenen Text und extrahiere die Werte für diese Felder:
+- k_name: "Name, Vorname" (Format: "Nachname, Vorname")
+- k_geb: Geburtsdatum (Format YYYY-MM-DD)
+- k_gesch: Geschlecht ("männlich" oder "weiblich")
+- k_str: Straße und Hausnummer
+- k_plz: Postleitzahl (5-stellig)
+- k_ort: Ort
+- k_tel: Telefonnummer
+- k_mob: Handynummer
+- k_mail: E-Mail
+- k_fam: Familienstand (ledig/verheiratet/verwitwet/geschieden)
+- k_pers: Personen im Haushalt (Zahl)
+- k_arzt: Hausarzt
+
+Antworte NUR mit einem JSON-Objekt. Felder die nicht erkannt wurden weglassen. Kein Markdown, keine Erklärung.`,
+
+  2:`Du bist ein Assistent für ein deutsches Pflegedienstformular.
+Analysiere den Text und extrahiere Kontaktpersonen-Daten:
+- kp1_name: Name der ersten Kontaktperson
+- kp1_str: Straße der ersten Kontaktperson
+- kp1_ort: PLZ und Ort der ersten Kontaktperson
+- kp1_tel: Telefon erste Kontaktperson
+- kp1_mob: Mobil erste Kontaktperson
+- kp1_bez: Beziehung (z.B. Sohn, Tochter, Ehepartner)
+- kp2_name: Name zweite Kontaktperson (falls erwähnt)
+- kp2_tel: Telefon zweite Kontaktperson
+
+Antworte NUR mit einem JSON-Objekt. Felder die nicht erkannt wurden weglassen.`,
+
+  3:`Du bist ein Assistent für ein deutsches Pflegedienstformular.
+Extrahiere aus dem Text:
+- pk_name: Name der Pflegekasse
+- pk_adr: Adresse der Pflegekasse
+- pk_vnr: Versichertennummer
+- pg_radio: Pflegegrad als Zahl 1-5
+- pg_seit: Datum seit wann Pflegegrad besteht (Format YYYY-MM-DD)
+- pg_ang_radio: Pflegegrad angemessen ("ja" oder "nein")
+- mdk_radio: MDK-Gutachten liegt vor ("ja", "nein" oder "angefordert")
+
+Antworte NUR mit einem JSON-Objekt. Felder die nicht erkannt wurden weglassen.`,
+
+  4:`Du bist ein Assistent für ein deutsches Pflegedienstformular.
+Extrahiere aus dem Text:
+- d_groesse: Größe in cm (nur Zahl)
+- d_gewicht: Gewicht in kg (nur Zahl)
+- d_diag: Pflegerelevante Diagnosen (als Text)
+- d_wunden: Wunden (als Text)
+- d_infekt: Infektionskrankheiten/MRSA (als Text)
+- em_checks: Array von Einsatzmerkmalen aus dieser Liste: ["BK männlich","BK weiblich","BK Führerschein","BK Auto","Rollstuhlfahrer","Klient raucht","BK Nichtraucher","Messi-Wohnung","Hund","Allergie Hund","Katze","Allergie Katze","Grundpflege","Duschen","Baden","Inkontinenzversorgung","Einkaufen","Kochen","Putzen"]
+- wg_checks: Array von gewünschten Leistungen aus: ["Hilfe bei der Haushaltsführung","pflegerische Betreuungsmaßnahme","körperbezogene Pflegemaßnahmen","Antrag auf Höherstufung","Beratungsgespräch §37.3","Wohnumfeldanalyse + Hilfsmittelberatung","Hausnotruf","Pflegehilfsmittelbox + Schlüsselübergabe"]
+- d_andere: Andere Dienstleister
+- d_summe: Summe anderer Dienstleister
+
+Antworte NUR mit einem JSON-Objekt. Felder die nicht erkannt wurden weglassen.`,
+
+  5:`Du bist ein Assistent für ein deutsches Pflegedienstformular.
+Extrahiere aus dem Text:
+- lst_radio: Leistungsart, EINER von: "Pflegesachleistung", "Kombinationsleistung", "Verhinderungspflege", "Gemeinsamer Jahresbetrag"
+- lst_ab: Leistung ab Datum (Format YYYY-MM-DD)
+- abtr_ab: Abtretung/Abrechnung ab Datum (Format YYYY-MM-DD)
+- paket: Gewähltes Betreuungspaket, EINES von: "S","M","L","XL","S+","M+","L+","XL+"
+
+Antworte NUR mit einem JSON-Objekt. Felder die nicht erkannt wurden weglassen.`,
+
+  6:`Du bist ein Assistent für ein deutsches Pflegedienstformular.
+Extrahiere Bankdaten aus dem Text:
+- s_bank: Name der Bank / Kreditinstitut
+- s_iban: IBAN (Leerzeichen entfernen, nur Großbuchstaben+Zahlen)
+- s_bic: BIC
+- s_kiname: Name des Kontoinhabers (falls abweichend)
+- s_kiadr: Adresse Kontoinhaber
+- sepa_art_radio: Zahlungsart ("einmalig" oder "wiederkehrend")
+- pp_name: Nachname Pflegeperson
+- pp_vname: Vorname Pflegeperson
+- pp_adr: Adresse Pflegeperson
+- pp_tel: Telefon Pflegeperson
+
+Antworte NUR mit einem JSON-Objekt. Felder die nicht erkannt wurden weglassen.`
+};
+
+// ── AI processing ─────────────────────────────────────
+async function processWithAI(step, transcript){
+  const trBox=g('tr'+step);
+  const micBtn=g('mic'+step);
+  micBtn.classList.add('loading');
+  showToast('KI analysiert Spracheingabe…', true);
+  trBox.textContent='💬 '+transcript;
+
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{
+          role:'user',
+          content: STEP_PROMPTS[step]+'\n\nText: "'+transcript+'"'
+        }]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content?.find(b=>b.type==='text')?.text||'{}';
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    applyFields(step, parsed, trBox);
+    showToast('✓ '+Object.keys(parsed).length+' Felder ausgefüllt');
+    setTimeout(hideToast, 2500);
+  } catch(e){
+    console.error(e);
+    showToast('⚠️ KI-Fehler – bitte manuell eingeben');
+    setTimeout(hideToast, 3000);
+  }
+  micBtn.classList.remove('loading');
+}
+
+// ── Apply extracted fields to form ────────────────────
+function applyFields(step, data, trBox){
+  let filled=0;
+  const flash=id=>{const el=g(id);if(el){el.classList.add('ai-filled');setTimeout(()=>el.classList.remove('ai-filled'),2000);}};
+
+  for(const [key,val] of Object.entries(data)){
+    if(!val&&val!==0)continue;
+
+    // Radio buttons (suffix _radio)
+    if(key.endsWith('_radio')){
+      const name=key.replace('_radio','');
+      const r=document.querySelector(`input[name="${name}"][value="${val}"]`);
+      if(r){r.checked=true;r.dispatchEvent(new Event('change'));
+        r.closest('.rbhi')?.classList.add('ck');
+        r.closest('.rbi')?.classList.add('ck');
+        filled++;}
+      // special: pflegegrad
+      if(name==='pg'){const r2=document.querySelector(`input[name="pg"][value="${val}"]`);if(r2){r2.checked=true;r2.closest('.rbhi')?.classList.add('ck');filled++;}}
+      continue;
+    }
+
+    // Checkbox arrays
+    if(key==='em_checks'||key==='wg_checks'){
+      const name=key==='em_checks'?'em':'wg';
+      (Array.isArray(val)?val:[val]).forEach(v=>{
+        const cb=document.querySelector(`input[name="${name}"][value="${v}"]`);
+        if(cb){cb.checked=true;cb.closest('.cbi')?.classList.add('ck');filled++;}
+      });
+      continue;
+    }
+
+    // Paket selection
+    if(key==='paket'){
+      document.querySelectorAll('.pak').forEach(p=>p.classList.remove('sel'));
+      const pakEl=[...document.querySelectorAll('.pak')].find(p=>p.querySelector('.pname')?.textContent.trim()==='Paket '+val);
+      if(pakEl){pakEl.classList.add('sel');selPaket=val;const pr=pakEl.querySelector('.ppreis');const st=pakEl.querySelector('.pstd');selPaketDesc=(pr?.textContent||'')+' · '+(st?.textContent||'');filled++;}
+      continue;
+    }
+
+    // Normal inputs
+    const el=g(key);
+    if(el){el.value=val;el.classList.add('filled');flash(key);filled++;}
+  }
+
+  sync();
+  if(trBox){
+    const summary=Object.entries(data).filter(([,v])=>v).map(([k,v])=>{
+      const label={'k_name':'Name','k_geb':'Geb.','k_str':'Straße','k_plz':'PLZ','k_ort':'Ort','pk_name':'Pflegekasse','pk_vnr':'Vs-Nr.','d_diag':'Diagnosen','s_iban':'IBAN'}[k]||k;
+      return`${label}: ${Array.isArray(v)?v.join(', '):v}`;
+    }).join(' · ');
+    trBox.innerHTML=`<span style="color:#5AAA6A;">✓ Erkannt:</span> ${summary||'Keine Felder erkannt'}`;
+  }
+}
+
+// ─── RESET ───────────────────────────────────────────────────────
+function reset(){
+  document.querySelectorAll('input[type=text],input[type=date],input[type=email],textarea').forEach(e=>e.value='');
+  document.querySelectorAll('select').forEach(e=>e.selectedIndex=0);
+  document.querySelectorAll('input[type=checkbox]').forEach(cb=>{cb.checked=false;cb.closest('.cbi')?.classList.remove('ck');});
+  document.querySelectorAll('input[type=radio]').forEach(r=>{r.checked=false;r.closest('.rbi')?.classList.remove('ck');r.closest('.rbhi')?.classList.remove('ck');});
+  document.querySelectorAll('.pak').forEach(p=>p.classList.remove('sel'));
+  selPaket='';selPaketDesc='';
+  clrSig();
+  g('sig_dat').value=new Date().toISOString().split('T')[0];
+  go(1);
+}
+</script>
+</body>
+</html>
