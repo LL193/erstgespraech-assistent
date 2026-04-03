@@ -97,9 +97,73 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
 .dtab th{background:var(--dark);color:var(--gold-l);padding:6px 9px;text-align:left;font-size:.69rem;letter-spacing:.05em;text-transform:uppercase;}
 .dtab td{padding:6px 9px;border-bottom:1px solid #EDE3D0;vertical-align:top;}
 .dtab tr:last-child td{border-bottom:none;}
+.sig-trigger{width:100%;padding:20px;border:2px dashed var(--gold-l);border-radius:10px;background:var(--white);cursor:pointer;text-align:center;color:#C8B888;font-size:.88rem;transition:all .2s;}
+.sig-trigger:hover{border-color:var(--gold);background:var(--gold-p);}
+.sig-trigger.signed{border-color:var(--ok);background:#F0FBF0;color:var(--ok);}
+.sig-overlay{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.88);z-index:9990;flex-direction:column;align-items:center;justify-content:center;padding:12px;}
+.sig-overlay.show{display:flex;}
+.sig-ob{background:var(--white);border-radius:14px;width:100%;max-width:960px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;}
+.sig-ob-title{font-family:'Playfair Display',serif;color:var(--gold);font-size:1.1rem;text-align:center;}
+.sig-ob-hint{font-size:.78rem;color:var(--txt2);text-align:center;}
+.sig-ob-wrap{position:relative;border:2px dashed var(--gold-l);border-radius:10px;overflow:hidden;background:#fff;flex:1;}
+#sigCanvasFS{display:block;width:100%;cursor:crosshair;touch-action:none;}
+.sig-ob-actions{display:flex;gap:10px;justify-content:space-between;}
+@media(max-width:600px){.sig-ob{padding:12px 10px;border-radius:0;height:100vh;}.sig-overlay{padding:0;}}
+
 .mic-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--dark);border:1.5px solid var(--gold);border-radius:9px;padding:10px 18px;font-size:.8rem;color:var(--gold-l);display:flex;align-items:center;gap:9px;z-index:9999;box-shadow:0 6px 24px rgba(0,0,0,.4);opacity:0;transition:opacity .3s;pointer-events:none;}
 .mic-toast.show{opacity:1;}
-@media(max-width:600px){.g2,.cbgrid,.rg{grid-template-columns:1fr;}.full{grid-column:1;}header{padding:11px 12px;}main{padding:12px 8px 40px;}.card{padding:14px 12px;}.pakgrid{grid-template-columns:1fr 1fr;}}
+
+@media(max-width:600px){
+  .g2,.cbgrid,.rg{grid-template-columns:1fr;}
+  .full{grid-column:1;}
+  header{padding:10px 12px;}
+  header h1{font-size:1.05rem;}
+  header p{font-size:.64rem;}
+  .hbadge{display:none;}
+  main{padding:10px 8px 40px;}
+  .card{padding:14px 12px;}
+  .ctitle{font-size:.92rem;}
+  .stab{min-width:52px;padding:8px 2px;font-size:.54rem;}
+  .stab .sn{width:14px;height:14px;font-size:.5rem;margin-right:2px;}
+  .field input,.field select,.field textarea,.fw input,.fw textarea{padding:10px 36px 10px 11px;font-size:.9rem;}
+  .field label{font-size:.7rem;}
+  .mbtn{font-size:1.05rem;padding:5px 7px;}
+  .cbi{padding:10px 11px;font-size:.86rem;}
+  .cbi input[type=checkbox]{width:17px;height:17px;}
+  .rbi{padding:10px 11px;font-size:.86rem;}
+  .rbhi{padding:8px 11px;font-size:.83rem;}
+  .btn{padding:12px 18px;font-size:.86rem;}
+  .nav{gap:8px;}
+  .nav .btn{flex:1;text-align:center;}
+  .pakgrid{grid-template-columns:1fr 1fr;}
+  .pak{padding:10px;}
+  .pak .pname{font-size:.82rem;}
+  .pak .pstd,.pak .ppreis{font-size:.7rem;}
+  .ddbtn{padding:13px 12px;font-size:.84rem;}
+  .succ h2{font-size:1.2rem;}
+  .succ p{font-size:.82rem;}
+  .sig-trigger{padding:26px 14px;font-size:.9rem;}
+  .ibox{font-size:.78rem;padding:9px 11px;}
+  .sdiv{font-size:.68rem;margin:13px 0 8px;}
+  .dprev{padding:11px 12px;}
+  .dprev h3{font-size:.82rem;}
+  .ptab{font-size:.72rem;}
+  .dtab{font-size:.74rem;}
+  .dtab th,.dtab td{padding:5px 5px;}
+}
+
+@media(max-width:360px){
+  .stab .sn{display:none;}
+  .stab{font-size:.5rem;min-width:40px;}
+  header h1{font-size:.92rem;}
+  .btn{padding:11px 12px;font-size:.8rem;}
+}
+
+@media(min-width:601px) and (max-width:900px){
+  main{padding:16px 14px 50px;}
+  .pakgrid{grid-template-columns:repeat(4,1fr);}
+}
+
 </style>
 </head>
 <body>
@@ -130,7 +194,7 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
       <div class="field"><label>Geburtsdatum <span class="req">*</span></label><input type="date" id="k_geb" oninput="sync()"></div>
       <div class="field"><label>Geschlecht</label><div class="rbh" style="margin-top:5px;"><label class="rbhi"><input type="radio" name="k_gesch" value="männlich" onchange="syncRbh(this)"> männlich</label><label class="rbhi"><input type="radio" name="k_gesch" value="weiblich" onchange="syncRbh(this)"> weiblich</label></div></div>
       <div class="field"><label>Straße, Hausnr. <span class="req">*</span></label><div class="fw"><input id="k_str" placeholder="Hauptstraße 12" oninput="sync()"><button class="mbtn" onclick="mic('k_str',this)" title="Sprechen">🎙️</button></div></div>
-      <div class="field"><label>PLZ <span class="req">*</span></label><div class="fw"><input id="k_plz" placeholder="86899" maxlength="5" oninput="sync()"><button class="mbtn" onclick="mic('k_plz',this)" title="Sprechen">🎙️</button></div></div>
+      <div class="field"><label>PLZ <span class="req">*</span></label><div class="fw"><input id="k_plz" placeholder="86899" maxlength="5" oninput="sync();plzLookup(this.value,'k_ort')" autocomplete="off"><button class="mbtn" onclick="mic('k_plz',this)" title="Sprechen">🎙️</button></div></div>
       <div class="field"><label>Ort <span class="req">*</span></label><div class="fw"><input id="k_ort" placeholder="Landsberg am Lech" oninput="sync()"><button class="mbtn" onclick="mic('k_ort',this)" title="Sprechen">🎙️</button></div></div>
       <div class="field"><label>Telefon</label><div class="fw"><input id="k_tel" placeholder="08191 …" oninput="sync()"><button class="mbtn" onclick="mic('k_tel',this)" title="Sprechen">🎙️</button></div></div>
       <div class="field"><label>Mobil</label><div class="fw"><input id="k_mob" oninput="sync()"><button class="mbtn" onclick="mic('k_mob',this)" title="Sprechen">🎙️</button></div></div>
@@ -371,15 +435,35 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
   <div class="card">
     <div class="ctitle">✍️ 8. Unterschrift</div>
     <div class="ibox">Mit dieser <strong>einmaligen Unterschrift</strong> werden alle 6 Dokumente rechtsgültig unterzeichnet.</div>
-    <div class="g2" style="margin-bottom:13px;">
+    <div class="g2" style="margin-bottom:16px;">
       <div class="field"><label>Ort <span class="req">*</span></label><input id="sig_ort" value="Landsberg am Lech"></div>
       <div class="field"><label>Datum <span class="req">*</span></label><input type="date" id="sig_dat"></div>
       <div class="field full"><label>Erstgespräch durchgeführt von</label><input id="eg_von" placeholder="Name des Mitarbeiters / der Mitarbeiterin"></div>
     </div>
-    <div class="sigwrap"><canvas id="sigCanvas" height="160"></canvas><div class="sighint" id="sighint">✍️ Hier unterschreiben<br><small>Finger oder Maus</small></div></div>
-    <div style="display:flex;gap:7px;margin-top:7px;"><button class="btn btn-s btn-sm" onclick="clrSig()">✕ Löschen</button></div>
+    <div id="sigTrigger" class="sig-trigger" onclick="openSigOverlay()">
+      ✍️ Hier tippen zum Unterschreiben<br><small>Öffnet Vollbild-Unterschriftsfeld</small>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:8px;">
+      <button class="btn btn-s btn-sm" onclick="resetSig()">✕ Unterschrift löschen</button>
+    </div>
   </div>
   <div class="nav"><button class="btn btn-s" onclick="go(7)">← Zurück</button><button class="btn btn-p" onclick="finish()">📄 Alle Dokumente fertigstellen</button></div>
+</div>
+
+<!-- SIGNATURE FULLSCREEN OVERLAY -->
+<div class="sig-overlay" id="sigOverlay">
+  <div class="sig-ob">
+    <div class="sig-ob-title">✍️ Bitte hier unterschreiben</div>
+    <div class="sig-ob-hint">Mit Finger, Stift oder Maus unterschreiben · Füllt das gesamte Feld aus</div>
+    <div class="sig-ob-wrap">
+      <canvas id="sigCanvasFS"></canvas>
+      <div class="sighint" id="sighintFS">✍️ Hier unterschreiben<br><small>Finger oder Maus</small></div>
+    </div>
+    <div class="sig-ob-actions">
+      <button class="btn btn-s btn-sm" onclick="clrSigFS()">✕ Löschen</button>
+      <button class="btn btn-p" onclick="acceptSig()">✓ Unterschrift übernehmen</button>
+    </div>
+  </div>
 </div>
 
 <!-- STEP 9: FERTIG -->
@@ -413,6 +497,200 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
 // ── STATE ─────────────────────────────────────────────
 let cur=1,sigData=null,hasSig=false,selPaket='',selPaketDesc='';
 const FIRMA={name:'KM Fürsorge GmbH',ik:'462938187',adr:'Hauptplatz 150, 86899 Landsberg am Lech',tel:'08191 93692 80',fax:'08191 93692 99',mail:'LL@homecare-alltagshelfer.de',web:'homecare-alltagshelfer.de/LL/'};
+
+// ── PLZ DATENBANK (Bayern + häufige deutsche PLZ) ─────
+const PLZ={
+'80331':'München','80333':'München','80335':'München','80336':'München','80337':'München',
+'80339':'München','80469':'München','80538':'München','80539':'München','80634':'München',
+'80636':'München','80637':'München','80638':'München','80639':'München','80796':'München',
+'80797':'München','80798':'München','80799':'München','80801':'München','80802':'München',
+'80803':'München','80804':'München','80805':'München','80807':'München','80809':'München',
+'81241':'München','81243':'München','81245':'München','81247':'München','81249':'München',
+'81369':'München','81371':'München','81373':'München','81375':'München','81377':'München',
+'81379':'München','81475':'München','81477':'München','81479':'München','81539':'München',
+'81541':'München','81543':'München','81545':'München','81547':'München','81549':'München',
+'81667':'München','81669':'München','81671':'München','81673':'München','81675':'München',
+'81677':'München','81679':'München','81735':'München','81737':'München','81739':'München',
+'81825':'München','81827':'München','81829':'München','81925':'München','81927':'München',
+'81929':'München',
+'86150':'Augsburg','86152':'Augsburg','86153':'Augsburg','86154':'Augsburg','86156':'Augsburg',
+'86157':'Augsburg','86159':'Augsburg','86161':'Augsburg','86163':'Augsburg','86165':'Augsburg',
+'86167':'Augsburg','86169':'Augsburg','86171':'Augsburg','86179':'Augsburg','86199':'Augsburg',
+'86316':'Friedberg','86343':'Königsbrunn','86368':'Gersthofen','86391':'Stadtbergen',
+'86399':'Bobingen','86405':'Meitingen','86415':'Mering','86420':'Diedorf','86424':'Dinkelscherben',
+'86438':'Kissing','86441':'Zusmarshausen','86444':'Affing','86447':'Todtenweis',
+'86450':'Altenmünster','86453':'Dasing','86456':'Gablingen','86459':'Gessertshausen',
+'86462':'Langweid','86465':'Welden','86470':'Thannhausen','86473':'Ziemetshausen',
+'86476':'Neuburg am Kammel','86477':'Rettenbach','86479':'Aystetten',
+'86480':'Aletshausen','86482':'Aichen','86483':'Achstetten',
+'86899':'Landsberg am Lech','86807':'Buchloe','86830':'Schwabmünchen',
+'86833':'Ettringen','86836':'Untermeitingen','86842':'Türkheim','86845':'Großaitingen',
+'86850':'Fischach','86853':'Langerringen','86856':'Hiltenfingen','86857':'Hurlach',
+'86859':'Igling','86860':'Jengen','86862':'Lamerdingen','86863':'Langenneufnach',
+'86865':'Markt Wald','86866':'Mickhausen','86869':'Pforzen','86871':'Rammingen',
+'86872':'Scherstetten','86874':'Tussenhausen','86875':'Waal','86877':'Walkertshofen',
+'86879':'Wiedergeltingen',
+'86150':'Augsburg','86609':'Donauwörth','86633':'Neuburg an der Donau',
+'86641':'Rain','86643':'Rennertshofen','86647':'Buttenwiesen','86650':'Wemding',
+'86653':'Monheim','86655':'Harburg','86657':'Bissingen','86660':'Tapfheim',
+'86662':'Nördlingen','86663':'Asbach-Bäumenheim','86664':'Gosheim','86666':'Burgheim',
+'86668':'Karlshuld','86669':'Baar-Ebenhausen','86670':'Todtenweis','86672':'Thierhaupten',
+'86673':'Bergheim','86674':'Baar-Ebenhausen','86675':'Buchdorf','86676':'Ehekirchen',
+'86678':'Rohrenfels','86679':'Ellgau','86681':'Fünfstetten','86682':'Genderkingen',
+'86684':'Holzheim','86685':'Huisheim','86687':'Kaisheim','86688':'Marxheim',
+'86690':'Mertingen','86692':'Munningen','86694':'Niederschönenfeld','86695':'Nordendorf',
+'86697':'Oberhausen','86698':'Oberndorf am Lech','86700':'Otting','86701':'Rögling',
+'86703':'Röfingen','86704':'Ronheim','86706':'Schiltberg','86707':'Kühlenthal',
+'86709':'Wolferstadt',
+'87600':'Kaufbeuren','87629':'Füssen','87637':'Seeg','87640':'Biessenhofen',
+'87642':'Halblech','87645':'Schwangau','87647':'Kraftisried','87648':'Aitrang',
+'87650':'Baisweil','87651':'Bidingen','87653':'Eggenthal','87654':'Friesenried',
+'87656':'Germaringen','87657':'Görisried','87659':'Hopferau','87660':'Irsee',
+'87662':'Kaltental','87663':'Lengenwang','87665':'Mauerstetten','87666':'Pforzen',
+'87668':'Rieden am Forggensee','87669':'Rückholz','87671':'Ronsberg','87672':'Roßhaupten',
+'87674':'Ruderatshofen','87675':'Stötten am Auerberg','87677':'Stöttwang',
+'87679':'Westendorf','87680':'Zell',
+'87700':'Memmingen','87719':'Mindelheim','87724':'Ottobeuren','87727':'Babenhausen',
+'87730':'Bad Grönenbach','87733':'Markt Rettenbach','87734':'Benningen',
+'87736':'Böhen','87737':'Boos','87739':'Breitenbrunn','87740':'Buxheim',
+'87742':'Apfeltrach','87743':'Egg an der Günz','87745':'Eppishausen',
+'87746':'Erkheim','87748':'Fellheim','87749':'Hawangen','87751':'Heimertingen',
+'87752':'Holzgünz','87754':'Kammlach','87755':'Kirchhaslach','87757':'Kirchheim in Schwaben',
+'87758':'Kronburg','87760':'Lachen','87761':'Lauben','87763':'Lautrach',
+'87764':'Legau','87766':'Memmingerberg','87767':'Niederrieden','87769':'Oberrieden',
+'87770':'Oberschönegg','87772':'Pfaffenhausen','87773':'Pleß','87775':'Salgen',
+'87776':'Sontheim','87778':'Stetten','87779':'Trunkelsberg','87781':'Ungerhausen',
+'87782':'Warmisried','87784':'Westerheim','87785':'Winterrieden','87787':'Wolfertschwenden',
+'87789':'Woringen',
+'89073':'Ulm','89075':'Ulm','89077':'Ulm','89079':'Ulm','89081':'Ulm',
+'89231':'Neu-Ulm','89233':'Neu-Ulm','89257':'Illertissen','89264':'Weißenhorn',
+'89269':'Vöhringen','89275':'Elchingen','89278':'Nersingen','89281':'Altenstadt',
+'89284':'Pfaffenhofen an der Roth','89287':'Bellenberg','89290':'Buch',
+'89291':'Holzheim','89293':'Kellmünz an der Iller','89294':'Oberroth',
+'89296':'Osterberg','89297':'Roggenburg','89299':'Unterroth',
+'10115':'Berlin','10117':'Berlin','10119':'Berlin','10178':'Berlin','10179':'Berlin',
+'10243':'Berlin','10245':'Berlin','10247':'Berlin','10249':'Berlin','10315':'Berlin',
+'10317':'Berlin','10318':'Berlin','10319':'Berlin','10365':'Berlin','10367':'Berlin',
+'10369':'Berlin','10405':'Berlin','10407':'Berlin','10409':'Berlin','10435':'Berlin',
+'10437':'Berlin','10439':'Berlin','10551':'Berlin','10553':'Berlin','10555':'Berlin',
+'10557':'Berlin','10559':'Berlin','10585':'Berlin','10587':'Berlin','10589':'Berlin',
+'10623':'Berlin','10625':'Berlin','10627':'Berlin','10629':'Berlin','10707':'Berlin',
+'10709':'Berlin','10711':'Berlin','10713':'Berlin','10715':'Berlin','10717':'Berlin',
+'10719':'Berlin','10777':'Berlin','10779':'Berlin','10781':'Berlin','10783':'Berlin',
+'10785':'Berlin','10787':'Berlin','10789':'Berlin','10823':'Berlin','10825':'Berlin',
+'10827':'Berlin','10829':'Berlin','10961':'Berlin','10963':'Berlin','10965':'Berlin',
+'10967':'Berlin','10969':'Berlin','10997':'Berlin','10999':'Berlin',
+'20095':'Hamburg','20097':'Hamburg','20099':'Hamburg','20144':'Hamburg','20146':'Hamburg',
+'20148':'Hamburg','20149':'Hamburg','20251':'Hamburg','20253':'Hamburg','20255':'Hamburg',
+'20257':'Hamburg','20259':'Hamburg','20354':'Hamburg','20355':'Hamburg','20357':'Hamburg',
+'20359':'Hamburg','20457':'Hamburg','20459':'Hamburg','20535':'Hamburg','20537':'Hamburg',
+'20539':'Hamburg',
+'50667':'Köln','50668':'Köln','50670':'Köln','50672':'Köln','50674':'Köln',
+'50676':'Köln','50677':'Köln','50678':'Köln','50679':'Köln','50733':'Köln',
+'50735':'Köln','50737':'Köln','50739':'Köln','50765':'Köln','50767':'Köln',
+'50769':'Köln','50823':'Köln','50825':'Köln','50827':'Köln','50829':'Köln',
+'60306':'Frankfurt am Main','60308':'Frankfurt am Main','60310':'Frankfurt am Main',
+'60311':'Frankfurt am Main','60313':'Frankfurt am Main','60314':'Frankfurt am Main',
+'60316':'Frankfurt am Main','60318':'Frankfurt am Main','60320':'Frankfurt am Main',
+'60322':'Frankfurt am Main','60323':'Frankfurt am Main','60325':'Frankfurt am Main',
+'60326':'Frankfurt am Main','60327':'Frankfurt am Main','60329':'Frankfurt am Main',
+'70173':'Stuttgart','70174':'Stuttgart','70176':'Stuttgart','70178':'Stuttgart',
+'70180':'Stuttgart','70182':'Stuttgart','70184':'Stuttgart','70186':'Stuttgart',
+'70188':'Stuttgart','70190':'Stuttgart','70192':'Stuttgart','70193':'Stuttgart',
+'70195':'Stuttgart','70197':'Stuttgart','70199':'Stuttgart',
+'90402':'Nürnberg','90403':'Nürnberg','90408':'Nürnberg','90409':'Nürnberg',
+'90411':'Nürnberg','90419':'Nürnberg','90425':'Nürnberg','90427':'Nürnberg',
+'90429':'Nürnberg','90431':'Nürnberg','90439':'Nürnberg','90441':'Nürnberg',
+'90443':'Nürnberg','90449':'Nürnberg','90451':'Nürnberg','90453':'Nürnberg',
+'90455':'Nürnberg','90457':'Nürnberg','90459':'Nürnberg','90461':'Nürnberg',
+'90469':'Nürnberg','90471':'Nürnberg','90473':'Nürnberg','90475':'Nürnberg',
+'90478':'Nürnberg','90480':'Nürnberg','90482':'Nürnberg','90489':'Nürnberg',
+'90491':'Nürnberg',
+'91052':'Erlangen','91054':'Erlangen','91056':'Erlangen','91058':'Erlangen',
+'85049':'Ingolstadt','85051':'Ingolstadt','85053':'Ingolstadt','85055':'Ingolstadt',
+'85057':'Ingolstadt','85072':'Eichstätt','85080':'Gaimersheim','85092':'Kösching',
+'85095':'Denkendorf','85098':'Großmehring','85101':'Lenting','85104':'Pförring',
+'85107':'Baar-Ebenhausen','85110':'Kipfenberg','85111':'Adelschlag','85113':'Böhmfeld',
+'85114':'Buxheim','85116':'Egweil','85117':'Eitensheim','85119':'Ernsgaden',
+'85120':'Hepberg','85121':'Dankesberg','85123':'Karlskron','85125':'Kinding',
+'85126':'Münchsmünster','85128':'Nassenfels','85129':'Oberdolling','85131':'Pollenfeld',
+'85132':'Schernfeld','85133':'Scheyern','85134':'Stammham','85135':'Titting',
+'85137':'Walting','85138':'Waidhofen','85139':'Wettstetten',
+'84028':'Landshut','84030':'Landshut','84032':'Landshut','84034':'Landshut',
+'83022':'Rosenheim','83024':'Rosenheim','83026':'Rosenheim',
+'83278':'Traunstein','83301':'Traunreut','83308':'Trostberg',
+'82211':'Herrsching am Ammersee','82319':'Starnberg','82335':'Berg',
+'82340':'Feldafing','82343':'Pöcking','82346':'Andechs','82347':'Bernried',
+'82349':'Pentenried','82351':'Penzberg','82362':'Weilheim in Oberbayern',
+'82377':'Penzberg','82380':'Peißenberg','82386':'Huglfing','82387':'Antdorf',
+'82389':'Böbing','82390':'Eberfing','82392':'Habach','82393':'Iffeldorf',
+'82395':'Obersöchering','82396':'Pähl','82398':'Polling','82399':'Raisting',
+'82401':'Rottenbuch','82402':'Seeshaupt','82404':'Sindelsdorf','82405':'Wessobrunn',
+'82407':'Wielenbach','82409':'Wildsteig',
+'82467':'Garmisch-Partenkirchen','82481':'Mittenwald','82487':'Oberammergau',
+'82488':'Ettal','82490':'Farchant','82491':'Grainau','82493':'Krün',
+'82494':'Krün','82496':'Oberau','82497':'Unterammergau','82499':'Wallgau',
+'83661':'Lenggries','83670':'Bad Tölz','83684':'Tegernsee','83700':'Rottach-Egern',
+'83707':'Bad Wiessee','83708':'Kreuth','83714':'Miesbach','83727':'Schliersee',
+'83730':'Fischbachau','83734':'Hausham','83737':'Irschenberg','83739':'Pfaffing',
+'94315':'Straubing','94469':'Deggendorf','94474':'Vilshofen an der Donau',
+'94481':'Grafenau','94486':'Osterhofen','94491':'Hengersberg','94496':'Ortenburg',
+'94501':'Aldersbach','94503':'Tiefenbach','94505':'Bernried','94508':'Schönberg',
+'94513':'Schönberg','94518':'Spiegelau','94522':'Wallersdorf','94527':'Aholming',
+'94530':'Auerbach','94532':'Außernzell','94533':'Buchhofen','94535':'Eging am See',
+'94536':'Eppenschlag','94538':'Fürstenstein','94539':'Grafling','94541':'Grattersdorf',
+'94542':'Haarbach','94544':'Hofkirchen','94545':'Hohenau','94547':'Iggensbach',
+'94548':'Innernzell','94550':'Künzing','94551':'Lalling','94553':'Mariaposching',
+'94554':'Moos','94556':'Neuschönau','94557':'Niederalteich','94559':'Niederwinkling',
+'94560':'Offenberg','94562':'Otzing','94563':'Otzing','94565':'Ruhstorf an der Rott',
+'94566':'Rinchnach','94568':'St. Oswald-Riedlhütte','94569':'Stephansposching',
+'94571':'Wallerfing','94572':'Schaufling','94574':'Wallerfing','94575':'Windorf',
+'94577':'Winzer','94579':'Zenting',
+'93047':'Regensburg','93049':'Regensburg','93051':'Regensburg','93053':'Regensburg',
+'93055':'Regensburg','93057':'Regensburg','93059':'Regensburg',
+'96050':'Bamberg','96052':'Bamberg','96103':'Hallstadt','96106':'Ebern',
+'97070':'Würzburg','97072':'Würzburg','97074':'Würzburg','97076':'Würzburg',
+'97078':'Würzburg','97080':'Würzburg','97082':'Würzburg','97084':'Würzburg',
+'95028':'Hof','95030':'Hof','95032':'Hof','95444':'Bayreuth','95445':'Bayreuth',
+'95447':'Bayreuth','95448':'Bayreuth','87435':'Kempten','87437':'Kempten',
+'87439':'Kempten','87452':'Altusried','87459':'Pfronten','87463':'Dietmannsried',
+'87466':'Oy-Mittelberg','87471':'Durach','87474':'Buchenberg','87477':'Sulzberg',
+'87480':'Weitnau','87484':'Nesselwang','87487':'Wiggensbach','87488':'Betzigau',
+'87490':'Haldenwang','87493':'Lauben','87494':'Rückholz','87496':'Untrasried',
+'87497':'Wertach','87499':'Wildpoldsried',
+'88131':'Lindau','88142':'Wasserburg','88145':'Opfenbach','88147':'Achberg',
+'88149':'Nonnenhorn','88161':'Lindenberg im Allgäu','88167':'Röthenbach',
+'88168':'Scheidegg','88169':'Rettenberg','88171':'Weiler-Simmerberg',
+'88172':'Wangen im Allgäu','88173':'Heimenkirch','88175':'Scheidegg',
+'88176':'Hauerz','88178':'Gestratz','88179':'Oberreute',
+'88212':'Ravensburg','88213':'Ravensburg','88214':'Ravensburg',
+'88239':'Wangen im Allgäu','88250':'Weingarten','88255':'Baienfurt',
+'88260':'Argenbühl','88263':'Horgenzell','88267':'Vogt','88271':'Wilhelmsdorf',
+'88273':'Fronreute','88276':'Berg','88279':'Amtzell','88281':'Schlier',
+'88284':'Wolpertswende','88285':'Bodnegg','88287':'Grünkraut','88289':'Waldburg',
+'88290':'Neukirch','88292':'Waldburg','88293':'Neukirch',
+'78462':'Konstanz','78464':'Konstanz','78465':'Konstanz','78467':'Konstanz',
+'78479':'Reichenau','78532':'Tuttlingen','78628':'Rottweil',
+'79098':'Freiburg im Breisgau','79100':'Freiburg im Breisgau','79102':'Freiburg im Breisgau',
+'79104':'Freiburg im Breisgau','79106':'Freiburg im Breisgau','79108':'Freiburg im Breisgau',
+'79110':'Freiburg im Breisgau','79111':'Freiburg im Breisgau','79112':'Freiburg im Breisgau',
+'79114':'Freiburg im Breisgau','79115':'Freiburg im Breisgau','79117':'Freiburg im Breisgau',
+};
+
+function plzLookup(plz, ortFieldId){
+  if(plz.length===5){
+    const ort=PLZ[plz];
+    if(ort){
+      const el=g(ortFieldId);
+      if(el&&!el.value.trim()){
+        el.value=ort;
+        el.classList.add('filled');
+        showToast('📍 Ort gefunden: '+ort);
+        setTimeout(hideToast,2000);
+      }
+    }
+  }
+}
 
 // ── HELPERS ───────────────────────────────────────────
 const g=id=>document.getElementById(id);
@@ -542,54 +820,96 @@ function buildReview(){
   g('pr_sp').innerHTML=rows([['Versicherter',v('s_vpname')||v('k_name')],['IBAN',v('s_iban')],['BIC',v('s_bic')],['Zahlungsart',rb('sepa_art')]]);
 }
 
-// ── SIGNATURE ─────────────────────────────────────────
-const canvas=g('sigCanvas'),ctx=canvas.getContext('2d');
-let drawing=false;
-let sigInited=false;
+// ── SIGNATURE FULLSCREEN ──────────────────────────────
+const fsCanvas=()=>g('sigCanvasFS');
+let drawing=false, hasSig=false, sigData=null;
 
-function resizeSig(){
+function resizeSigFS(){
+  const c=fsCanvas();
+  if(!c)return;
   const ratio=window.devicePixelRatio||1;
-  const wrap=canvas.parentElement;
-  const w=wrap.offsetWidth||wrap.getBoundingClientRect().width||600;
-  canvas.width=w*ratio;
-  canvas.height=160*ratio;
-  canvas.style.width=w+'px';
-  canvas.style.height='160px';
-  ctx.setTransform(1,0,0,1,0,0);
-  ctx.scale(ratio,ratio);
-  ctx.strokeStyle='#1A1610';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
-  sigInited=true;
+  const w=c.parentElement.offsetWidth||c.parentElement.getBoundingClientRect().width||600;
+  const h=Math.max(window.innerHeight*0.55, 260);
+  c.width=w*ratio; c.height=h*ratio;
+  c.style.width=w+'px'; c.style.height=h+'px';
+  const cx=c.getContext('2d');
+  cx.setTransform(1,0,0,1,0,0);
+  cx.scale(ratio,ratio);
+  cx.strokeStyle='#1A1610'; cx.lineWidth=2.5; cx.lineCap='round'; cx.lineJoin='round';
 }
 
-function ensureSigInited(){
-  if(!sigInited||canvas.width===0)resizeSig();
+function openSigOverlay(){
+  g('sigOverlay').classList.add('show');
+  document.body.style.overflow='hidden';
+  setTimeout(resizeSigFS, 50);
 }
 
-function pos(e){
-  ensureSigInited();
-  const r=canvas.getBoundingClientRect();
-  const scaleX=canvas.width/(window.devicePixelRatio||1)/r.width;
-  const scaleY=canvas.height/(window.devicePixelRatio||1)/r.height;
+function closeSigOverlay(){
+  g('sigOverlay').classList.remove('show');
+  document.body.style.overflow='';
+}
+
+function acceptSig(){
+  if(!hasSig){alert('Bitte zuerst unterschreiben.');return;}
+  sigData=fsCanvas().toDataURL();
+  closeSigOverlay();
+  // Update trigger button
+  const t=g('sigTrigger');
+  t.classList.add('signed');
+  t.innerHTML='✅ Unterschrift vorhanden<br><small>Erneut tippen zum Ändern</small>';
+}
+
+function clrSigFS(){
+  const c=fsCanvas();
+  const ratio=window.devicePixelRatio||1;
+  const cx=c.getContext('2d');
+  cx.clearRect(0,0,c.width/ratio,c.height/ratio);
+  hasSig=false;
+  g('sighintFS').style.display='block';
+}
+
+function resetSig(){
+  hasSig=false; sigData=null;
+  clrSigFS();
+  const t=g('sigTrigger');
+  t.classList.remove('signed');
+  t.innerHTML='✍️ Hier tippen zum Unterschreiben<br><small>Öffnet Vollbild-Unterschriftsfeld</small>';
+}
+
+function posFS(e){
+  const c=fsCanvas();
+  const r=c.getBoundingClientRect();
+  const ratio=window.devicePixelRatio||1;
+  const scaleX=(c.width/ratio)/r.width;
+  const scaleY=(c.height/ratio)/r.height;
   if(e.touches)return{x:(e.touches[0].clientX-r.left)*scaleX,y:(e.touches[0].clientY-r.top)*scaleY};
   return{x:(e.clientX-r.left)*scaleX,y:(e.clientY-r.top)*scaleY};
 }
 
-canvas.addEventListener('mousedown',e=>{ensureSigInited();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);e.preventDefault();});
-canvas.addEventListener('mousemove',e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();hasSig=true;g('sighint').style.display='none';});
-canvas.addEventListener('mouseup',()=>{drawing=false;if(hasSig)sigData=canvas.toDataURL();});
-canvas.addEventListener('mouseleave',()=>{drawing=false;});
-canvas.addEventListener('touchstart',e=>{e.preventDefault();ensureSigInited();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
-canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();hasSig=true;g('sighint').style.display='none';},{passive:false});
-canvas.addEventListener('touchend',()=>{drawing=false;if(hasSig)sigData=canvas.toDataURL();});
+// attach events after DOM ready
+window.addEventListener('load',()=>{
+  const c=fsCanvas();
+  if(!c)return;
+  const cx=()=>c.getContext('2d');
+  c.addEventListener('mousedown',e=>{drawing=true;const p=posFS(e);cx().beginPath();cx().moveTo(p.x,p.y);e.preventDefault();});
+  c.addEventListener('mousemove',e=>{if(!drawing)return;const p=posFS(e);cx().lineTo(p.x,p.y);cx().stroke();hasSig=true;g('sighintFS').style.display='none';});
+  c.addEventListener('mouseup',()=>drawing=false);
+  c.addEventListener('mouseleave',()=>drawing=false);
+  c.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=posFS(e);cx().beginPath();cx().moveTo(p.x,p.y);},{passive:false});
+  c.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=posFS(e);cx().lineTo(p.x,p.y);cx().stroke();hasSig=true;g('sighintFS').style.display='none';},{passive:false});
+  c.addEventListener('touchend',()=>drawing=false);
+});
 
-function clrSig(){
-  resizeSig();
-  hasSig=false;sigData=null;
-  g('sighint').style.display='block';
-}
+// Close overlay on background click
+g('sigOverlay').addEventListener('click',e=>{if(e.target===g('sigOverlay'))closeSigOverlay();});
+window.addEventListener('resize',()=>{if(g('sigOverlay').classList.contains('show'))resizeSigFS();});
 
 g('sig_dat').value=new Date().toISOString().split('T')[0];
-window.addEventListener('resize',()=>{if(cur===8)resizeSig();});
+
+// keep old resizeSig stub for go(8) call
+function resizeSig(){}
+function ensureSigInited(){}
+
 
 function finish(){
   if(!hasSig){alert('Bitte zunächst unterschreiben.');return;}
