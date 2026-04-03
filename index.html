@@ -211,45 +211,60 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
 <div class="panel" id="s2">
   <div class="card">
     <div class="ctitle">📞 2. Kontaktperson / Bevollmächtigte</div>
-    <table class="dtab">
-      <thead><tr><th></th><th>Anrufer / Bevollmächtigung</th><th>Kontaktperson / Bevollmächtigung</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Name, Vorname</strong></td><td><input id="kp1_name" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td><td><input id="kp2_name" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td></tr>
-        <tr><td><strong>Straße, Hausnr.</strong></td><td><input id="kp1_str" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td><td><input id="kp2_str" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td></tr>
-        <tr><td><strong>PLZ, Ort</strong></td><td><input id="kp1_ort" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td><td><input id="kp2_ort" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td></tr>
-        <tr><td><strong>Telefon</strong></td><td><input id="kp1_tel" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td><td><input id="kp2_tel" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td></tr>
-        <tr><td><strong>Mobil</strong></td><td><input id="kp1_mob" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td><td><input id="kp2_mob" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td></tr>
-        <tr><td><strong>E-Mail</strong></td><td><input id="kp1_mail" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td><td><input id="kp2_mail" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td></tr>
-        <tr><td><strong>Beziehung</strong></td><td><input id="kp1_bez" placeholder="z. B. Tochter" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td><td><input id="kp2_bez" style="width:100%;padding:5px 7px;border:1.5px solid #D8CEBC;border-radius:6px;font-size:.8rem;background:var(--bg);" oninput="sync()"></td></tr>
-      </tbody>
-    </table>
-    <div class="sdiv" style="margin-top:16px;">Vollmachten / Benachrichtigung</div>
-    <div class="g2" style="gap:9px;">
-      <div>
-        <div style="font-size:.72rem;font-weight:700;color:var(--txt2);margin-bottom:7px;">Anrufer / Bevollmächtigte</div>
-        <div class="cbgroup">
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Vorsorgevollmacht"> Vorsorgevollmacht</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Patientenverfügung"> Patientenverfügung</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Generalvollmacht"> Generalvollmacht</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Betreuer"> Betreuer</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Sorgeberechtigter"> Sorgeberechtigter</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Post/Email"> Post / E-Mail</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Termine"> Termine</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Notfall"> Notfall</label>
-        </div>
+
+    <!-- Tab switcher -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button id="kpTab1" onclick="switchKpTab(1)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--gold);background:var(--gold);color:var(--dark);font-weight:700;font-size:.8rem;cursor:pointer;">Anrufer / Bevollmächtigung</button>
+      <button id="kpTab2" onclick="switchKpTab(2)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #D8CEBC;background:var(--bg);color:var(--txt2);font-weight:700;font-size:.8rem;cursor:pointer;">Kontaktperson</button>
+    </div>
+
+    <!-- Anrufer -->
+    <div id="kpPanel1">
+      <div class="g2">
+        <div class="field full"><label>Name, Vorname</label><div class="fw"><input id="kp1_name" oninput="sync()"><button class="mbtn" onclick="mic('kp1_name',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field full"><label>Straße, Hausnr.</label><div class="fw"><input id="kp1_str" oninput="sync()"><button class="mbtn" onclick="mic('kp1_str',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field"><label>PLZ</label><div class="fw"><input id="kp1_plz" maxlength="5" oninput="sync();plzLookup(this.value,'kp1_ort')"><button class="mbtn" onclick="mic('kp1_plz',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field"><label>Ort</label><div class="fw"><input id="kp1_ort" oninput="sync()"><button class="mbtn" onclick="mic('kp1_ort',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field"><label>Telefon</label><div class="fw"><input id="kp1_tel" oninput="sync()"><button class="mbtn" onclick="mic('kp1_tel',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field"><label>Mobil</label><div class="fw"><input id="kp1_mob" oninput="sync()"><button class="mbtn" onclick="mic('kp1_mob',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field full"><label>E-Mail</label><div class="fw"><input id="kp1_mail" oninput="sync()"><button class="mbtn" onclick="mic('kp1_mail',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field full"><label>Beziehung</label><div class="fw"><input id="kp1_bez" placeholder="z. B. Tochter" oninput="sync()"><button class="mbtn" onclick="mic('kp1_bez',this)" title="Sprechen">🎙️</button></div></div>
       </div>
-      <div>
-        <div style="font-size:.72rem;font-weight:700;color:var(--txt2);margin-bottom:7px;">Kontaktperson / Bevollmächtigte</div>
-        <div class="cbgroup">
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Vorsorgevollmacht"> Vorsorgevollmacht</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Patientenverfügung"> Patientenverfügung</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Generalvollmacht"> Generalvollmacht</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Betreuer"> Betreuer</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Sorgeberechtigter"> Sorgeberechtigter</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Post/Email"> Post / E-Mail</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Termine"> Termine</label>
-          <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Notfall"> Notfall</label>
-        </div>
+      <div class="sdiv">Vollmachten / Benachrichtigung</div>
+      <div class="cbgrid">
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Vorsorgevollmacht"> Vorsorgevollmacht</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Patientenverfügung"> Patientenverfügung</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Generalvollmacht"> Generalvollmacht</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Betreuer"> Betreuer</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Sorgeberechtigter"> Sorgeberechtigter</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Post/Email"> Post / E-Mail</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Termine"> Termine</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v1" value="Notfall"> Notfall</label>
+      </div>
+    </div>
+
+    <!-- Kontaktperson -->
+    <div id="kpPanel2" style="display:none;">
+      <div class="g2">
+        <div class="field full"><label>Name, Vorname</label><div class="fw"><input id="kp2_name" oninput="sync()"><button class="mbtn" onclick="mic('kp2_name',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field full"><label>Straße, Hausnr.</label><div class="fw"><input id="kp2_str" oninput="sync()"><button class="mbtn" onclick="mic('kp2_str',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field"><label>PLZ</label><div class="fw"><input id="kp2_plz" maxlength="5" oninput="sync();plzLookup(this.value,'kp2_ort')"><button class="mbtn" onclick="mic('kp2_plz',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field"><label>Ort</label><div class="fw"><input id="kp2_ort" oninput="sync()"><button class="mbtn" onclick="mic('kp2_ort',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field"><label>Telefon</label><div class="fw"><input id="kp2_tel" oninput="sync()"><button class="mbtn" onclick="mic('kp2_tel',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field"><label>Mobil</label><div class="fw"><input id="kp2_mob" oninput="sync()"><button class="mbtn" onclick="mic('kp2_mob',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field full"><label>E-Mail</label><div class="fw"><input id="kp2_mail" oninput="sync()"><button class="mbtn" onclick="mic('kp2_mail',this)" title="Sprechen">🎙️</button></div></div>
+        <div class="field full"><label>Beziehung</label><div class="fw"><input id="kp2_bez" oninput="sync()"><button class="mbtn" onclick="mic('kp2_bez',this)" title="Sprechen">🎙️</button></div></div>
+      </div>
+      <div class="sdiv">Vollmachten / Benachrichtigung</div>
+      <div class="cbgrid">
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Vorsorgevollmacht"> Vorsorgevollmacht</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Patientenverfügung"> Patientenverfügung</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Generalvollmacht"> Generalvollmacht</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Betreuer"> Betreuer</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Sorgeberechtigter"> Sorgeberechtigter</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Post/Email"> Post / E-Mail</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Termine"> Termine</label>
+        <label class="cbi" onclick="tc(this)"><input type="checkbox" name="v2" value="Notfall"> Notfall</label>
       </div>
     </div>
   </div>
@@ -758,6 +773,15 @@ function syncRbh(inp){
 function selPak(el,name,desc){
   document.querySelectorAll('.pak').forEach(p=>p.classList.remove('sel'));
   el.classList.add('sel');selPaket=name;selPaketDesc=desc;
+}
+
+function switchKpTab(n){
+  g('kpPanel1').style.display=n===1?'block':'none';
+  g('kpPanel2').style.display=n===2?'block':'none';
+  const on='background:var(--gold);color:var(--dark);border-color:var(--gold);font-weight:700;';
+  const off='background:var(--bg);color:var(--txt2);border-color:#D8CEBC;font-weight:700;';
+  g('kpTab1').style.cssText=n===1?on:off;
+  g('kpTab2').style.cssText=n===2?on:off;
 }
 
 // init
