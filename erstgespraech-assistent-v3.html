@@ -435,6 +435,7 @@ function go(n){
   });
   cur=n;
   if(n===7)buildReview();
+  if(n===8){setTimeout(resizeSig,50);}
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -528,25 +529,51 @@ function buildReview(){
 // ── SIGNATURE ─────────────────────────────────────────
 const canvas=g('sigCanvas'),ctx=canvas.getContext('2d');
 let drawing=false;
+let sigInited=false;
+
 function resizeSig(){
-  const ratio=window.devicePixelRatio||1,w=canvas.parentElement.getBoundingClientRect().width;
-  canvas.width=w*ratio;canvas.height=160*ratio;
-  canvas.style.width=w+'px';canvas.style.height='160px';
-  ctx.scale(ratio,ratio);ctx.strokeStyle='#1A1610';ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';
+  const ratio=window.devicePixelRatio||1;
+  const wrap=canvas.parentElement;
+  const w=wrap.offsetWidth||wrap.getBoundingClientRect().width||600;
+  canvas.width=w*ratio;
+  canvas.height=160*ratio;
+  canvas.style.width=w+'px';
+  canvas.style.height='160px';
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(ratio,ratio);
+  ctx.strokeStyle='#1A1610';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
+  sigInited=true;
 }
-function pos(e){const r=canvas.getBoundingClientRect();
-  if(e.touches)return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
-  return{x:e.clientX-r.left,y:e.clientY-r.top};}
-canvas.addEventListener('mousedown',e=>{drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);});
+
+function ensureSigInited(){
+  if(!sigInited||canvas.width===0)resizeSig();
+}
+
+function pos(e){
+  ensureSigInited();
+  const r=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/(window.devicePixelRatio||1)/r.width;
+  const scaleY=canvas.height/(window.devicePixelRatio||1)/r.height;
+  if(e.touches)return{x:(e.touches[0].clientX-r.left)*scaleX,y:(e.touches[0].clientY-r.top)*scaleY};
+  return{x:(e.clientX-r.left)*scaleX,y:(e.clientY-r.top)*scaleY};
+}
+
+canvas.addEventListener('mousedown',e=>{ensureSigInited();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);e.preventDefault();});
 canvas.addEventListener('mousemove',e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();hasSig=true;g('sighint').style.display='none';});
 canvas.addEventListener('mouseup',()=>{drawing=false;if(hasSig)sigData=canvas.toDataURL();});
-canvas.addEventListener('mouseleave',()=>drawing=false);
-canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
+canvas.addEventListener('mouseleave',()=>{drawing=false;});
+canvas.addEventListener('touchstart',e=>{e.preventDefault();ensureSigInited();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
 canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();hasSig=true;g('sighint').style.display='none';},{passive:false});
 canvas.addEventListener('touchend',()=>{drawing=false;if(hasSig)sigData=canvas.toDataURL();});
-function clrSig(){const r=window.devicePixelRatio||1;ctx.clearRect(0,0,canvas.width/r,canvas.height/r);hasSig=false;sigData=null;g('sighint').style.display='block';}
+
+function clrSig(){
+  resizeSig();
+  hasSig=false;sigData=null;
+  g('sighint').style.display='block';
+}
+
 g('sig_dat').value=new Date().toISOString().split('T')[0];
-window.addEventListener('load',resizeSig);window.addEventListener('resize',resizeSig);
+window.addEventListener('resize',()=>{if(cur===8)resizeSig();});
 
 function finish(){
   if(!hasSig){alert('Bitte zunächst unterschreiben.');return;}
