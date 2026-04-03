@@ -199,11 +199,11 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
     <div class="g2">
       <div class="field full"><label>Pflegekasse <span class="req">*</span></label><div class="fw"><input id="pk_name" placeholder="z. B. AOK Bayern" oninput="sync()"><button class="mbtn" onclick="mic('pk_name',this)" title="Sprechen">🎙️</button></div></div>
       <div class="field full"><label>Adresse der Pflegekasse</label><div class="fw"><input id="pk_adr" placeholder="Straße, PLZ Ort" oninput="sync()"><button class="mbtn" onclick="mic('pk_adr',this)" title="Sprechen">🎙️</button></div></div>
-      <div class="field"><label>Versicherten-Nr.</label><div class="fw"><input id="pk_vnr" placeholder="A123456789" oninput="sync()"><button class="mbtn" onclick="mic('pk_vnr',this)" title="Sprechen">🎙️</button></div></div>
+      <div class="field"><label>Versicherten-Nr. <span class="req">*</span></label><div class="fw"><input id="pk_vnr" placeholder="A123456789" oninput="sync()"><button class="mbtn" onclick="mic('pk_vnr',this)" title="Sprechen">🎙️</button></div></div>
       <div class="field"><label>Privat versichert – Vs-Nr.</label><div class="fw"><input id="pk_privnr" oninput="sync()"><button class="mbtn" onclick="mic('pk_privnr',this)" title="Sprechen">🎙️</button></div></div>
       <div class="field full"><label>Beihilfe</label><div class="fw"><input id="pk_beih" oninput="sync()"><button class="mbtn" onclick="mic('pk_beih',this)" title="Sprechen">🎙️</button></div></div>
     </div>
-    <div class="sdiv">Pflegegrad</div>
+    <div class="sdiv">Pflegegrad <span class="req" style="color:var(--gold);font-size:.8rem;">*</span></div>
     <div class="rbh" id="pgGroup">
       <label class="rbhi"><input type="radio" name="pg" value="1" onchange="syncRbh(this)"> PG 1</label>
       <label class="rbhi"><input type="radio" name="pg" value="2" onchange="syncRbh(this)"> PG 2</label>
@@ -395,8 +395,14 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
         <button class="ddbtn" onclick="pDoc('at')"><span>📄 Abtretungserklärung §45b/§39</span><span>🖨️</span></button>
         <button class="ddbtn" onclick="pDoc('ae')"><span>📄 Änderungsantrag ambulante Pflegeleistung</span><span>🖨️</span></button>
         <button class="ddbtn" onclick="pDoc('eu')"><span>📄 EU Einwilligungserklärung</span><span>🖨️</span></button>
-        <button class="ddbtn" onclick="pDoc('sepa')"><span>📄 SEPA-Lastschriftmandat</span><span>🖨️</span></button>
-        <button class="ddbtn all" onclick="pDoc('alle')"><span><strong>📦 Alle 6 Dokumente drucken</strong></span><span>🖨️</span></button>
+        <div class="ddbtn" style="cursor:default;background:var(--gold-p);border-color:var(--gold);">
+          <span style="display:flex;align-items:center;gap:10px;">
+            <input type="checkbox" id="sepaCheck" style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer;" onchange="g('sepaBtn').style.display=this.checked?'flex':'none'">
+            <label for="sepaCheck" style="cursor:pointer;font-weight:700;">📄 SEPA-Lastschriftmandat (optional)</label>
+          </span>
+        </div>
+        <button class="ddbtn" id="sepaBtn" onclick="pDoc('sepa')" style="display:none;"><span>📄 SEPA-Lastschriftmandat drucken</span><span>🖨️</span></button>
+        <button class="ddbtn all" onclick="pDoc('alle')"><span><strong>📦 Alle Dokumente drucken</strong></span><span>🖨️</span></button>
       </div>
       <button class="btn btn-s" onclick="resetAll()">🔄 Neues Erstgespräch starten</button>
     </div>
@@ -444,12 +450,22 @@ function validate(s){
     const req=['k_name','k_str','k_plz','k_ort','k_geb'];
     let ok=true;
     req.forEach(id=>{const e=g(id);if(!e.value.trim()){e.classList.add('bad');ok=false;}else e.classList.remove('bad');});
-    if(!ok){alert('Bitte alle Pflichtfelder ausfüllen.');return false;}
+    if(!ok){alert('Bitte alle Pflichtfelder in Schritt 1 ausfüllen.');return false;}
   }
   if(s===3){
-    const e=g('pk_name');
-    if(!e.value.trim()){e.classList.add('bad');alert('Bitte den Namen der Pflegekasse eingeben.');return false;}
-    e.classList.remove('bad');
+    let ok=true;
+    const kasse=g('pk_name');
+    if(!kasse.value.trim()){kasse.classList.add('bad');ok=false;}else kasse.classList.remove('bad');
+    const vnr=g('pk_vnr');
+    if(!vnr.value.trim()){vnr.classList.add('bad');ok=false;}else vnr.classList.remove('bad');
+    if(!rb('pg')){
+      // highlight the pflegegrad group
+      g('pgGroup').style.outline='2px solid var(--err)';g('pgGroup').style.borderRadius='8px';g('pgGroup').style.padding='6px';
+      ok=false;
+    } else {
+      g('pgGroup').style.outline='';g('pgGroup').style.padding='';
+    }
+    if(!ok){alert('Bitte Pflegekasse, Versicherten-Nr. und Pflegegrad ausfüllen.');return false;}
   }
   return true;
 }
@@ -876,20 +892,63 @@ ${sigB('Unterschrift/en des Kontoinhabers/Zahlers')}
 <p style="margin-top:12px;font-size:9px;">Vor dem ersten Einzug einer SEPA-Lastschrift wird mich/uns (Kontoinhaber/Zahler) die AS Abrechnungsstelle für Heil-, Hilfs- und Pflegeberufe AG über den Einzug in dieser Verfahrensart unterrichten.</p>`;
 }
 
-// ── PRINT ─────────────────────────────────────────────
+// ── PRINT / SAVE PDF ──────────────────────────────────
+const isMobile=()=>/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 function pDoc(which){
-  const pb=`<div style="page-break-after:always;"></div>`;
-  const wrap=c=>`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>KM Fürsorge – Dokumente</title>${PCSS}</head><body>${c}<script>window.onload=()=>window.print();<\/script></body></html>`;
-  let c='';
-  if(which==='eg')c=wrap(docEG());
-  else if(which==='vm')c=wrap(docVM());
-  else if(which==='at')c=wrap(docAT());
-  else if(which==='ae')c=wrap(docAE());
-  else if(which==='eu')c=wrap(docEU());
-  else if(which==='sepa')c=wrap(docSEPA());
-  else c=wrap(docEG()+pb+docVM()+pb+docAT()+pb+docAE()+pb+docEU()+pb+docSEPA());
-  const w=window.open('','_blank');
-  w.document.write(c);w.document.close();
+  const pb=`<div style="page-break-after:always;margin:0;padding:0;"></div>`;
+  const sepaIncl=g('sepaCheck')?.checked||false;
+
+  const names={
+    eg:'Erstgespraech',vm:'Vollmacht_Budgetabfrage',at:'Abtretungserklaerung',
+    ae:'Aenderungsantrag',eu:'EU_Einwilligung',sepa:'SEPA_Mandat',alle:'Alle_Dokumente'
+  };
+
+  let content='';
+  if(which==='eg')content=docEG();
+  else if(which==='vm')content=docVM();
+  else if(which==='at')content=docAT();
+  else if(which==='ae')content=docAE();
+  else if(which==='eu')content=docEU();
+  else if(which==='sepa')content=docSEPA();
+  else content=docEG()+pb+docVM()+pb+docAT()+pb+docAE()+pb+docEU()+(sepaIncl?pb+docSEPA():'');
+
+  const kname=v('k_name').replace(/[^a-zA-ZäöüÄÖÜß\s]/g,'').trim().replace(/\s+/g,'_')||'Klient';
+  const dat=fd(v('sig_dat'))||fd(new Date().toISOString().split('T')[0]);
+  const filename=`${names[which]}_${kname}_${dat.replace(/\./g,'-')}.html`;
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>KM Fürsorge – ${names[which]}</title>${PCSS}<style>
+  @media screen{
+    body{max-width:800px;margin:0 auto;}
+    .print-btn{position:fixed;bottom:20px;right:20px;background:#B8922A;color:#1A1610;border:none;padding:14px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);z-index:999;}
+    .print-btn:hover{background:#D4AF5A;}
+    .save-hint{position:fixed;bottom:70px;right:20px;background:#1A1610;color:#D4AF5A;padding:8px 14px;border-radius:8px;font-size:11px;max-width:200px;text-align:center;z-index:999;}
+  }
+  @media print{.print-btn,.save-hint{display:none!important;}}
+  </style></head><body>
+  ${content}
+  <button class="print-btn" onclick="window.print()">🖨️ Drucken / Als PDF speichern</button>
+  <div class="save-hint">📱 Auf dem Handy: Teilen → „In Dateien sichern" oder „Als PDF sichern"</div>
+  </body></html>`;
+
+  if(isMobile()){
+    // Mobile: download as HTML file which opens in browser for saving
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    showToast('📥 Datei wird heruntergeladen…');
+    setTimeout(hideToast,3000);
+  } else {
+    // Desktop: open in new tab with print button
+    const w=window.open('','_blank');
+    w.document.write(html);
+    w.document.close();
+    setTimeout(()=>w.print(),800);
+  }
 }
 
 // ── RESET ─────────────────────────────────────────────
