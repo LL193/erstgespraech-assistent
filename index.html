@@ -1300,7 +1300,7 @@ async function savePDF(which){
     }
 
     const wrapper=document.createElement('div');
-    wrapper.style.cssText='font-family:Arial,sans-serif;font-size:10px;color:#000;padding:0;margin:0;width:794px;position:fixed;left:-9999px;top:0;';
+    wrapper.style.cssText='font-family:Arial,sans-serif;font-size:10px;color:#000;padding:0;margin:0;width:794px;position:absolute;left:0;top:0;z-index:-1;background:#fff;';
     wrapper.innerHTML=`<style>
       *{box-sizing:border-box;margin:0;padding:0;}
       body,html{margin:0;padding:0;}
@@ -1330,9 +1330,7 @@ async function savePDF(which){
         scale:2,
         useCORS:true,
         logging:false,
-        scrollY:0,
-        scrollX:0,
-        windowWidth:794,
+        allowTaint:true,
       },
       jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
       pagebreak:{mode:['css','legacy']},
