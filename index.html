@@ -284,6 +284,7 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
     </div>
     <div class="sdiv">Pflegegrad <span class="req" style="color:var(--gold);font-size:.8rem;">*</span></div>
     <div class="rbh" id="pgGroup">
+      <label class="rbhi"><input type="radio" name="pg" value="k.P." onchange="syncRbh(this)"> k.P.</label>
       <label class="rbhi"><input type="radio" name="pg" value="1" onchange="syncRbh(this)"> PG 1</label>
       <label class="rbhi"><input type="radio" name="pg" value="2" onchange="syncRbh(this)"> PG 2</label>
       <label class="rbhi"><input type="radio" name="pg" value="3" onchange="syncRbh(this)"> PG 3</label>
@@ -487,22 +488,42 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
     <div class="succ">
       <div class="si">✅</div>
       <h2>Erstgespräch abgeschlossen!</h2>
-      <p>Alle Dokumente wurden ausgefüllt und mit der Unterschrift versehen. Bitte jetzt ausdrucken oder als PDF speichern.</p>
-      <div class="ddlist">
-        <button class="ddbtn" onclick="pDoc('eg')"><span>📋 Erstgespräch (Seite 1 & 2)</span><span>🖨️</span></button>
-        <button class="ddbtn" onclick="pDoc('vm')"><span>📄 Vollmacht Budgetabfrage</span><span>🖨️</span></button>
-        <button class="ddbtn" onclick="pDoc('at')"><span>📄 Abtretungserklärung §45b/§39</span><span>🖨️</span></button>
-        <button class="ddbtn" onclick="pDoc('ae')"><span>📄 Änderungsantrag ambulante Pflegeleistung</span><span>🖨️</span></button>
-        <button class="ddbtn" onclick="pDoc('eu')"><span>📄 EU Einwilligungserklärung</span><span>🖨️</span></button>
-        <div class="ddbtn" style="cursor:default;background:var(--gold-p);border-color:var(--gold);">
-          <span style="display:flex;align-items:center;gap:10px;">
-            <input type="checkbox" id="sepaCheck" style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer;" onchange="g('sepaBtn').style.display=this.checked?'flex':'none'">
-            <label for="sepaCheck" style="cursor:pointer;font-weight:700;">📄 SEPA-Lastschriftmandat (optional)</label>
-          </span>
+      <p>Alle Dokumente wurden ausgefüllt und mit der Unterschrift versehen.</p>
+
+      <!-- SPEICHERN -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt2);margin-bottom:8px;text-align:left;">💾 Als PDF speichern</div>
+        <div class="ddlist" style="margin-bottom:10px;">
+          <button class="ddbtn all" onclick="savePDF('alle')"><span><strong>📄 Alle Dokumente als PDF</strong></span><span>📥</span></button>
+          <button class="ddbtn" onclick="savePDF('eg')"><span>📄 Erstgespräch als PDF</span><span>📥</span></button>
+          <button class="ddbtn" onclick="savePDF('vm')"><span>📄 Vollmacht als PDF</span><span>📥</span></button>
+          <button class="ddbtn" onclick="savePDF('at')"><span>📄 Abtretungserklärung als PDF</span><span>📥</span></button>
+          <button class="ddbtn" onclick="savePDF('ae')"><span>📄 Änderungsantrag als PDF</span><span>📥</span></button>
+          <button class="ddbtn" onclick="savePDF('eu')"><span>📄 EU Einwilligung als PDF</span><span>📥</span></button>
+          <button class="ddbtn" onclick="saveDoc('alle')"><span>📦 Alle als ZIP (HTML)</span><span>📥</span></button>
         </div>
-        <button class="ddbtn" id="sepaBtn" onclick="pDoc('sepa')" style="display:none;"><span>📄 SEPA-Lastschriftmandat drucken</span><span>🖨️</span></button>
-        <button class="ddbtn all" onclick="pDoc('alle')"><span><strong>📦 Alle Dokumente drucken</strong></span><span>🖨️</span></button>
       </div>
+
+      <!-- DRUCKEN -->
+      <div>
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt2);margin-bottom:8px;text-align:left;">🖨️ Drucken / einzeln speichern</div>
+        <div class="ddlist">
+          <button class="ddbtn" onclick="pDoc('eg')"><span>📋 Erstgespräch (Seite 1 & 2)</span><span>🖨️</span></button>
+          <button class="ddbtn" onclick="pDoc('vm')"><span>📄 Vollmacht Budgetabfrage</span><span>🖨️</span></button>
+          <button class="ddbtn" onclick="pDoc('at')"><span>📄 Abtretungserklärung §45b/§39</span><span>🖨️</span></button>
+          <button class="ddbtn" onclick="pDoc('ae')"><span>📄 Änderungsantrag ambulante Pflegeleistung</span><span>🖨️</span></button>
+          <button class="ddbtn" onclick="pDoc('eu')"><span>📄 EU Einwilligungserklärung</span><span>🖨️</span></button>
+          <div class="ddbtn" style="cursor:default;background:var(--gold-p);border-color:var(--gold);">
+            <span style="display:flex;align-items:center;gap:10px;">
+              <input type="checkbox" id="sepaCheck" style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer;" onchange="g('sepaBtn').style.display=this.checked?'flex':'none'">
+              <label for="sepaCheck" style="cursor:pointer;font-weight:700;">📄 SEPA-Lastschriftmandat (optional)</label>
+            </span>
+          </div>
+          <button class="ddbtn" id="sepaBtn" onclick="pDoc('sepa')" style="display:none;"><span>📄 SEPA-Lastschriftmandat drucken</span><span>🖨️</span></button>
+          <button class="ddbtn all" onclick="pDoc('alle')"><span><strong>📦 Alle Dokumente drucken</strong></span><span>🖨️</span></button>
+        </div>
+      </div>
+
       <button class="btn btn-s" onclick="resetAll()">🔄 Neues Erstgespräch starten</button>
     </div>
   </div>
@@ -1234,6 +1255,146 @@ ${v('s_kiname')?`<tr><td style="font-weight:bold;font-size:9px;">Kontoinhaber / 
 
 ${sigB('Unterschrift/en des Kontoinhabers/Zahlers')}
 <p style="margin-top:12px;font-size:9px;">Vor dem ersten Einzug einer SEPA-Lastschrift wird mich/uns (Kontoinhaber/Zahler) die AS Abrechnungsstelle für Heil-, Hilfs- und Pflegeberufe AG über den Einzug in dieser Verfahrensart unterrichten.</p>`;
+}
+
+// ── SAVE AS PDF ───────────────────────────────────────
+async function loadLib(src){
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src=src;s.onload=res;s.onerror=rej;
+    document.head.appendChild(s);
+  });
+}
+
+async function savePDF(which){
+  const kname=v('k_name').replace(/[^a-zA-ZäöüÄÖÜß\s]/g,'').trim().replace(/\s+/g,'_')||'Klient';
+  const dat=fd(v('sig_dat'))||fd(new Date().toISOString().split('T')[0]);
+  const prefix=`${kname}_${dat.replace(/\./g,'-')}`;
+  const sepaIncl=g('sepaCheck')?.checked||false;
+  const pb=`<div style="page-break-after:always;"></div>`;
+
+  showToast('📄 PDF wird erstellt…');
+
+  try{
+    if(!window.html2pdf) await loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+
+    const docs={
+      eg:{label:'Erstgespraech',content:docEG()},
+      vm:{label:'Vollmacht',content:docVM()},
+      at:{label:'Abtretung',content:docAT()},
+      ae:{label:'Aenderungsantrag',content:docAE()},
+      eu:{label:'EU_Einwilligung',content:docEU()},
+      sepa:{label:'SEPA',content:docSEPA()},
+    };
+
+    let content='';
+    let filename='';
+    if(which==='alle'){
+      const parts=[docs.eg,docs.vm,docs.at,docs.ae,docs.eu];
+      if(sepaIncl)parts.push(docs.sepa);
+      content=parts.map(d=>d.content).join(pb);
+      filename=`Erstgespraech_${prefix}_alle.pdf`;
+    } else {
+      content=docs[which].content;
+      filename=`${prefix}_${docs[which].label}.pdf`;
+    }
+
+    const wrapper=document.createElement('div');
+    wrapper.style.cssText='font-family:Arial,sans-serif;font-size:10px;color:#000;padding:10px 16px;max-width:740px;margin:0 auto;';
+    wrapper.innerHTML=`<style>
+      h1{font-size:14px;text-align:center;margin-bottom:8px;}
+      h2{font-size:12px;font-weight:bold;margin:8px 0 3px;border-bottom:1px solid #000;padding-bottom:2px;}
+      h3{font-size:11px;font-weight:bold;margin:6px 0 3px;}
+      table{width:100%;border-collapse:collapse;margin:3px 0 7px;}
+      td,th{padding:3px 5px;border:1px solid #999;font-size:9px;vertical-align:top;}
+      th{background:#EEE;font-weight:bold;font-size:8.5px;}
+      .noborder td{border:none;padding:2px 0;}
+      .line{border-bottom:1px solid #000;min-width:160px;display:inline-block;min-height:14px;vertical-align:bottom;}
+      .cb{margin:2px 0;font-size:9px;}
+      .footer{margin-top:12px;padding-top:5px;border-top:1px solid #ccc;font-size:7.5px;color:#555;text-align:center;}
+      .header-firm{font-size:7.5px;color:#555;margin-bottom:8px;line-height:1.4;border-bottom:1px solid #eee;padding-bottom:5px;}
+      .sig-block{margin-top:20px;display:flex;gap:30px;align-items:flex-end;}
+      .sig-line{border-bottom:1px solid #000;min-width:180px;padding-bottom:2px;margin-bottom:3px;min-height:40px;}
+      .sig-img{max-height:38px;display:block;}
+    </style>${content}`;
+
+    document.body.appendChild(wrapper);
+
+    await html2pdf().set({
+      margin:[10,10,10,10],
+      filename:filename,
+      image:{type:'jpeg',quality:0.95},
+      html2canvas:{scale:2,useCORS:true,logging:false},
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+      pagebreak:{mode:['avoid-all','css','legacy']},
+    }).from(wrapper).save();
+
+    document.body.removeChild(wrapper);
+    showToast('✅ PDF gespeichert: '+filename);
+    setTimeout(hideToast,3000);
+  } catch(e){
+    console.error(e);
+    showToast('⚠️ PDF-Fehler – bitte Drucken→Als PDF nutzen');
+    setTimeout(hideToast,3000);
+  }
+}
+
+// ── SAVE ALL AS ZIP ───────────────────────────────────
+async function saveDoc(which){
+  const kname=v('k_name').replace(/[^a-zA-ZäöüÄÖÜß\s]/g,'').trim().replace(/\s+/g,'_')||'Klient';
+  const dat=fd(v('sig_dat'))||fd(new Date().toISOString().split('T')[0]);
+  const prefix=`${kname}_${dat.replace(/\./g,'-')}`;
+  const pb=`<div style="page-break-after:always;"></div>`;
+  const sepaIncl=g('sepaCheck')?.checked||false;
+
+  const docs=[
+    {name:`${prefix}_1_Erstgespraech.html`,content:docEG()},
+    {name:`${prefix}_2_Vollmacht.html`,content:docVM()},
+    {name:`${prefix}_3_Abtretung.html`,content:docAT()},
+    {name:`${prefix}_4_Aenderungsantrag.html`,content:docAE()},
+    {name:`${prefix}_5_EU_Einwilligung.html`,content:docEU()},
+  ];
+  if(sepaIncl)docs.push({name:`${prefix}_6_SEPA.html`,content:docSEPA()});
+
+  showToast('💾 Dateien werden gespeichert…');
+
+  try{
+    await new Promise((res,rej)=>{
+      if(window.JSZip){res();return;}
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+      s.onload=res;s.onerror=rej;
+      document.head.appendChild(s);
+    });
+    const zip=new JSZip();
+    const folder=zip.folder(prefix);
+    docs.forEach(d=>{
+      const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${d.name}</title>${PCSS}<style>@media screen{.pbtn{position:fixed;bottom:20px;right:20px;background:#B8922A;color:#1A1610;border:none;padding:12px 22px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);}}</style></head><body>${d.content}<button class="pbtn" onclick="window.print()">🖨️ Drucken / Als PDF</button></body></html>`;
+      folder.file(d.name,html);
+    });
+    const blob=await zip.generateAsync({type:'blob'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`Erstgespraech_${prefix}.zip`;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    showToast('✅ ZIP gespeichert – '+docs.length+' Dokumente');
+    setTimeout(hideToast,3000);
+  }catch(e){
+    // Fallback: alles in einer Datei
+    const all=docs.map(d=>d.content).join(pb);
+    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Erstgespraech_${prefix}</title>${PCSS}</head><body>${all}<script>window.onload=()=>window.print();<\/script></body></html>`;
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`Erstgespraech_${prefix}_alle.html`;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    showToast('✅ Datei gespeichert');
+    setTimeout(hideToast,2500);
+  }
 }
 
 // ── PRINT / SAVE PDF ──────────────────────────────────
