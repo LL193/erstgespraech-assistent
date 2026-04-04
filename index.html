@@ -937,7 +937,7 @@ function ensureSigInited(){}
 
 function finish(){
   if(!hasSig){alert('Bitte zunächst unterschreiben.');return;}
-  sigData=canvas.toDataURL();
+  sigData=fsCanvas().toDataURL();
   if(!v('s_vpname'))g('s_vpname').value=v('k_name');
   if(!v('s_vpadr'))g('s_vpadr').value=getAdresse();
   go(9);
