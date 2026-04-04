@@ -491,24 +491,21 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
       <p>Alle Dokumente wurden ausgefüllt und mit der Unterschrift versehen.</p>
 
       <!-- SPEICHERN -->
-      <div style="margin-bottom:10px;">
-        <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt2);margin-bottom:4px;text-align:left;">💾 Als PDF speichern</div>
-        <div style="font-size:.72rem;color:var(--txt2);margin-bottom:8px;text-align:left;">📱 Mobil: Datei wird heruntergeladen → im Browser öffnen → teilen/drucken<br>💻 PC: Druckdialog → „Als PDF speichern" wählen</div>
-        <div class="ddlist" style="margin-bottom:10px;">
-          <button class="ddbtn all" onclick="savePDF('alle')"><span><strong>📄 Alle Dokumente als PDF</strong></span><span>📥</span></button>
-          <button class="ddbtn" onclick="savePDF('eg')"><span>📄 Erstgespräch als PDF</span><span>📥</span></button>
-          <button class="ddbtn" onclick="savePDF('vm')"><span>📄 Vollmacht als PDF</span><span>📥</span></button>
-          <button class="ddbtn" onclick="savePDF('at')"><span>📄 Abtretungserklärung als PDF</span><span>📥</span></button>
-          <button class="ddbtn" onclick="savePDF('ae')"><span>📄 Änderungsantrag als PDF</span><span>📥</span></button>
-          <button class="ddbtn" onclick="savePDF('eu')"><span>📄 EU Einwilligung als PDF</span><span>📥</span></button>
-          <button class="ddbtn" onclick="saveDoc('alle')"><span>📦 Alle als ZIP (HTML)</span><span>📥</span></button>
+      <div style="margin-bottom:14px;">
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt2);margin-bottom:8px;text-align:left;">💾 Dokumente speichern</div>
+        <div class="ddlist" style="margin-bottom:6px;">
+          <button class="ddbtn all" onclick="dlDoc('alle')"><span><strong>💾 Alle Dokumente speichern</strong></span><span>📥</span></button>
+          <button class="ddbtn" onclick="dlDoc('eg')"><span>💾 Erstgespräch speichern</span><span>📥</span></button>
+          <button class="ddbtn" onclick="dlDoc('vm')"><span>💾 Vollmacht speichern</span><span>📥</span></button>
+          <button class="ddbtn" onclick="dlDoc('at')"><span>💾 Abtretungserklärung speichern</span><span>📥</span></button>
+          <button class="ddbtn" onclick="dlDoc('ae')"><span>💾 Änderungsantrag speichern</span><span>📥</span></button>
+          <button class="ddbtn" onclick="dlDoc('eu')"><span>💾 EU Einwilligungserklärung speichern</span><span>📥</span></button>
+        </div>
+        <div style="font-size:.71rem;color:var(--txt2);line-height:1.5;text-align:left;">
+          📥 Datei wird als HTML gespeichert · Im Browser öffnen → <strong>Strg+P</strong> → „Als PDF speichern"
         </div>
       </div>
-
-      <!-- DRUCKEN -->
-      <div>
-        <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt2);margin-bottom:8px;text-align:left;">🖨️ Drucken / einzeln speichern</div>
-        <div class="ddlist">
+          <button class="ddbtn all" onclick="pDoc('alle')"><span><strong>📦 Alle Dokumente drucken / Als PDF</strong></span><span>🖨️</span></button>
           <button class="ddbtn" onclick="pDoc('eg')"><span>📋 Erstgespräch (Seite 1 & 2)</span><span>🖨️</span></button>
           <button class="ddbtn" onclick="pDoc('vm')"><span>📄 Vollmacht Budgetabfrage</span><span>🖨️</span></button>
           <button class="ddbtn" onclick="pDoc('at')"><span>📄 Abtretungserklärung §45b/§39</span><span>🖨️</span></button>
@@ -520,8 +517,14 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
               <label for="sepaCheck" style="cursor:pointer;font-weight:700;">📄 SEPA-Lastschriftmandat (optional)</label>
             </span>
           </div>
-          <button class="ddbtn" id="sepaBtn" onclick="pDoc('sepa')" style="display:none;"><span>📄 SEPA-Lastschriftmandat drucken</span><span>🖨️</span></button>
-          <button class="ddbtn all" onclick="pDoc('alle')"><span><strong>📦 Alle Dokumente drucken</strong></span><span>🖨️</span></button>
+          <button class="ddbtn" id="sepaBtn" onclick="pDoc('sepa')" style="display:none;"><span>📄 SEPA-Lastschriftmandat</span><span>🖨️</span></button>
+        </div>
+        <div style="font-size:.72rem;color:var(--txt2);margin-top:8px;text-align:left;line-height:1.5;">
+          💻 <strong>PC:</strong> Druckdialog → Drucker auf „Als PDF speichern" stellen<br>
+          📱 <strong>Handy:</strong> Datei wird heruntergeladen → im Browser öffnen → Teilen → Als PDF
+        </div>
+        <div style="margin-top:10px;">
+          <button class="ddbtn" onclick="saveDoc('alle')" style="border-color:var(--txt2);"><span>📦 Alle als HTML-Archiv (ZIP) speichern</span><span>📥</span></button>
         </div>
       </div>
 
@@ -1344,6 +1347,67 @@ ${content}
     document.body.removeChild(a);
     setTimeout(()=>URL.revokeObjectURL(url),3000);
   }
+}
+
+// ── DOWNLOAD AS FILE ──────────────────────────────────
+function dlDoc(which){
+  const kname=v('k_name').replace(/[^a-zA-ZäöüÄÖÜß\s]/g,'').trim().replace(/\s+/g,'_')||'Klient';
+  const dat=fd(v('sig_dat'))||fd(new Date().toISOString().split('T')[0]);
+  const prefix=`${kname}_${dat.replace(/\./g,'-')}`;
+  const pb=`<div style="page-break-after:always;"></div>`;
+  const sepaIncl=g('sepaCheck')?.checked||false;
+
+  const docMap={
+    eg:{label:'Erstgespraech',content:docEG()},
+    vm:{label:'Vollmacht',content:docVM()},
+    at:{label:'Abtretung',content:docAT()},
+    ae:{label:'Aenderungsantrag',content:docAE()},
+    eu:{label:'EU_Einwilligung',content:docEU()},
+    sepa:{label:'SEPA',content:docSEPA()},
+  };
+
+  let content='';
+  let filename='';
+  if(which==='alle'){
+    const parts=[docMap.eg,docMap.vm,docMap.at,docMap.ae,docMap.eu];
+    if(sepaIncl)parts.push(docMap.sepa);
+    content=parts.map(d=>d.content).join(pb);
+    filename=`Erstgespraech_${prefix}_alle`;
+  } else {
+    content=docMap[which].content;
+    filename=`${prefix}_${docMap[which].label}`;
+  }
+
+  const html=`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>${filename}</title>
+${PCSS}
+<style>
+@media screen{
+  .top-bar{position:sticky;top:0;background:#1A1610;color:#D4AF5A;padding:10px 16px;font-family:Arial,sans-serif;font-size:12px;font-weight:bold;display:flex;align-items:center;justify-content:space-between;z-index:999;}
+  .top-bar button{background:#B8922A;color:#1A1610;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;}
+  body{padding-top:0;}
+}
+@media print{.top-bar{display:none!important;}}
+</style>
+</head><body>
+<div class="top-bar">
+  <span>📄 ${filename}.html</span>
+  <button onclick="window.print()">🖨️ Drucken / Als PDF speichern</button>
+</div>
+${content}
+</body></html>`;
+
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=filename+'.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  showToast('📥 '+filename+'.html gespeichert');
+  setTimeout(hideToast,2500);
 }
 
 // ── SAVE ALL AS ZIP ───────────────────────────────────
