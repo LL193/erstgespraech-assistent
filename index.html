@@ -492,7 +492,8 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
 
       <!-- SPEICHERN -->
       <div style="margin-bottom:10px;">
-        <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt2);margin-bottom:8px;text-align:left;">💾 Als PDF speichern</div>
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt2);margin-bottom:4px;text-align:left;">💾 Als PDF speichern</div>
+        <div style="font-size:.72rem;color:var(--txt2);margin-bottom:8px;text-align:left;">📱 Mobil: Datei wird heruntergeladen → im Browser öffnen → teilen/drucken<br>💻 PC: Druckdialog → „Als PDF speichern" wählen</div>
         <div class="ddlist" style="margin-bottom:10px;">
           <button class="ddbtn all" onclick="savePDF('alle')"><span><strong>📄 Alle Dokumente als PDF</strong></span><span>📥</span></button>
           <button class="ddbtn" onclick="savePDF('eg')"><span>📄 Erstgespräch als PDF</span><span>📥</span></button>
@@ -1258,91 +1259,90 @@ ${sigB('Unterschrift/en des Kontoinhabers/Zahlers')}
 }
 
 // ── SAVE AS PDF ───────────────────────────────────────
-async function loadLib(src){
-  return new Promise((res,rej)=>{
-    const s=document.createElement('script');
-    s.src=src;s.onload=res;s.onerror=rej;
-    document.head.appendChild(s);
-  });
-}
-
-async function savePDF(which){
+function savePDF(which){
   const kname=v('k_name').replace(/[^a-zA-ZäöüÄÖÜß\s]/g,'').trim().replace(/\s+/g,'_')||'Klient';
   const dat=fd(v('sig_dat'))||fd(new Date().toISOString().split('T')[0]);
   const prefix=`${kname}_${dat.replace(/\./g,'-')}`;
   const sepaIncl=g('sepaCheck')?.checked||false;
-  const pb=`<div style="page-break-after:always;"></div>`;
+  const pb=`<div style="page-break-after:always;margin:0;padding:0;"></div>`;
 
-  showToast('📄 PDF wird erstellt…');
+  const docMap={
+    eg:{label:'Erstgespraech',content:docEG()},
+    vm:{label:'Vollmacht',content:docVM()},
+    at:{label:'Abtretung',content:docAT()},
+    ae:{label:'Aenderungsantrag',content:docAE()},
+    eu:{label:'EU_Einwilligung',content:docEU()},
+    sepa:{label:'SEPA',content:docSEPA()},
+  };
 
-  try{
-    if(!window.html2pdf) await loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+  let content='';
+  let filename='';
+  if(which==='alle'){
+    const parts=[docMap.eg,docMap.vm,docMap.at,docMap.ae,docMap.eu];
+    if(sepaIncl)parts.push(docMap.sepa);
+    content=parts.map(d=>d.content).join(pb);
+    filename=`Erstgespraech_${prefix}_alle`;
+  } else {
+    content=docMap[which].content;
+    filename=`${prefix}_${docMap[which].label}`;
+  }
 
-    const docs={
-      eg:{label:'Erstgespraech',content:docEG()},
-      vm:{label:'Vollmacht',content:docVM()},
-      at:{label:'Abtretung',content:docAT()},
-      ae:{label:'Aenderungsantrag',content:docAE()},
-      eu:{label:'EU_Einwilligung',content:docEU()},
-      sepa:{label:'SEPA',content:docSEPA()},
-    };
+  const html=`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>${filename}</title>
+${PCSS}
+<style>
+@media screen{
+  body{padding:20px;}
+  .pdf-info{position:fixed;top:0;left:0;right:0;background:#1A1610;color:#D4AF5A;padding:10px 20px;font-family:Arial,sans-serif;font-size:13px;font-weight:bold;z-index:9999;display:flex;align-items:center;justify-content:space-between;}
+  .pdf-info button{background:#B8922A;color:#1A1610;border:none;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:bold;cursor:pointer;}
+  .pdf-info span{font-size:11px;color:#A09070;margin-left:12px;}
+  body{margin-top:50px;}
+}
+@media print{
+  .pdf-info{display:none!important;}
+  body{margin:0;padding:0;}
+}
+</style>
+</head>
+<body>
+<div class="pdf-info">
+  <div>📄 ${filename}<span>Drucken → "Als PDF speichern" wählen</span></div>
+  <button onclick="window.print()">🖨️ Als PDF speichern</button>
+</div>
+${content}
+<script>
+  // Auto-trigger print dialog after short delay
+  setTimeout(()=>window.print(), 600);
+<\/script>
+</body></html>`;
 
-    let content='';
-    let filename='';
-    if(which==='alle'){
-      const parts=[docs.eg,docs.vm,docs.at,docs.ae,docs.eu];
-      if(sepaIncl)parts.push(docs.sepa);
-      content=parts.map(d=>d.content).join(pb);
-      filename=`Erstgespraech_${prefix}_alle.pdf`;
-    } else {
-      content=docs[which].content;
-      filename=`${prefix}_${docs[which].label}.pdf`;
-    }
+  // Mobile: direkter Download als HTML
+  if(isMobile()){
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename+'.html';
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    showToast('📥 Gespeichert – in Dateien öffnen zum Drucken');
+    setTimeout(hideToast,3500);
+    return;
+  }
 
-    const wrapper=document.createElement('div');
-    wrapper.style.cssText='font-family:Arial,sans-serif;font-size:10px;color:#000;padding:0;margin:0;width:794px;position:absolute;left:0;top:0;z-index:-1;background:#fff;';
-    wrapper.innerHTML=`<style>
-      *{box-sizing:border-box;margin:0;padding:0;}
-      body,html{margin:0;padding:0;}
-      h1{font-size:14px;text-align:center;margin-bottom:8px;margin-top:0;}
-      h2{font-size:12px;font-weight:bold;margin:8px 0 3px;border-bottom:1px solid #000;padding-bottom:2px;}
-      h3{font-size:11px;font-weight:bold;margin:6px 0 3px;}
-      table{width:100%;border-collapse:collapse;margin:3px 0 7px;}
-      td,th{padding:3px 5px;border:1px solid #999;font-size:9px;vertical-align:top;}
-      th{background:#EEE;font-weight:bold;font-size:8.5px;}
-      .noborder td{border:none;padding:2px 0;}
-      .line{border-bottom:1px solid #000;min-width:160px;display:inline-block;min-height:14px;vertical-align:bottom;}
-      .cb{margin:2px 0;font-size:9px;}
-      .footer{margin-top:12px;padding-top:5px;border-top:1px solid #ccc;font-size:7.5px;color:#555;text-align:center;}
-      .header-firm{font-size:7.5px;color:#555;margin-bottom:8px;line-height:1.4;border-bottom:1px solid #eee;padding-bottom:5px;margin-top:0;}
-      .sig-block{margin-top:20px;display:flex;gap:30px;align-items:flex-end;}
-      .sig-line{border-bottom:1px solid #000;min-width:180px;padding-bottom:2px;margin-bottom:3px;min-height:40px;}
-      .sig-img{max-height:38px;display:block;}
-    </style>${content}`;
-
-    document.body.appendChild(wrapper);
-
-    await html2pdf().set({
-      margin:[12,12,12,12],
-      filename:filename,
-      image:{type:'jpeg',quality:0.97},
-      html2canvas:{
-        scale:2,
-        useCORS:true,
-        logging:false,
-        allowTaint:true,
-      },
-      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
-      pagebreak:{mode:['css','legacy']},
-    }).from(wrapper).save();
-
-    document.body.removeChild(wrapper);
-    showToast('✅ PDF gespeichert: '+filename);
-    setTimeout(hideToast,3000);
-  } catch(e){
-    console.error(e);
-    showToast('⚠️ PDF-Fehler – bitte Drucken→Als PDF nutzen');
-    setTimeout(hideToast,3000);
+  // Desktop: neues Tab mit Auto-Print
+  const w=window.open('','_blank');
+  if(w){
+    w.document.write(html);
+    w.document.close();
+  } else {
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename+'.html';
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
   }
 }
 
