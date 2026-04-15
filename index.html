@@ -490,39 +490,25 @@ main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
       <h2>Erstgespräch abgeschlossen!</h2>
       <p>Alle Dokumente wurden ausgefüllt und mit der Unterschrift versehen.</p>
 
-      <!-- SPEICHERN -->
-      <div style="margin-bottom:14px;">
-        <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt2);margin-bottom:8px;text-align:left;">💾 Als PDF speichern</div>
-        <div class="ddlist" style="margin-bottom:6px;">
-          <button class="ddbtn all" onclick="generatePDF('alle')"><span><strong>💾 Alle Dokumente als PDF</strong></span><span>📥</span></button>
-          <button class="ddbtn" onclick="generatePDF('eg')"><span>💾 Erstgespräch als PDF</span><span>📥</span></button>
-          <button class="ddbtn" onclick="generatePDF('vm')"><span>💾 Vollmacht als PDF</span><span>📥</span></button>
-          <button class="ddbtn" onclick="generatePDF('at')"><span>💾 Abtretungserklärung als PDF</span><span>📥</span></button>
-          <button class="ddbtn" onclick="generatePDF('ae')"><span>💾 Änderungsantrag als PDF</span><span>📥</span></button>
-          <button class="ddbtn" onclick="generatePDF('eu')"><span>💾 EU Einwilligungserklärung als PDF</span><span>📥</span></button>
+      <!-- DOKUMENTE -->
+      <div class="ddlist">
+        <button class="ddbtn all" onclick="pDoc('alle')"><span><strong>📦 Alle Dokumente öffnen</strong></span><span>🖨️</span></button>
+        <button class="ddbtn" onclick="pDoc('eg')"><span>📋 Erstgespräch (Seite 1 & 2)</span><span>🖨️</span></button>
+        <button class="ddbtn" onclick="pDoc('vm')"><span>📄 Vollmacht Budgetabfrage</span><span>🖨️</span></button>
+        <button class="ddbtn" onclick="pDoc('at')"><span>📄 Abtretungserklärung §45b/§39</span><span>🖨️</span></button>
+        <button class="ddbtn" onclick="pDoc('ae')"><span>📄 Änderungsantrag ambulante Pflegeleistung</span><span>🖨️</span></button>
+        <button class="ddbtn" onclick="pDoc('eu')"><span>📄 EU Einwilligungserklärung</span><span>🖨️</span></button>
+        <div class="ddbtn" style="cursor:default;background:var(--gold-p);border-color:var(--gold);">
+          <span style="display:flex;align-items:center;gap:10px;">
+            <input type="checkbox" id="sepaCheck" style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer;" onchange="g('sepaBtn').style.display=this.checked?'flex':'none'">
+            <label for="sepaCheck" style="cursor:pointer;font-weight:700;">📄 SEPA-Lastschriftmandat (optional)</label>
+          </span>
         </div>
+        <button class="ddbtn" id="sepaBtn" onclick="pDoc('sepa')" style="display:none;"><span>📄 SEPA-Lastschriftmandat</span><span>🖨️</span></button>
       </div>
-          <button class="ddbtn all" onclick="pDoc('alle')"><span><strong>📦 Alle Dokumente drucken / Als PDF</strong></span><span>🖨️</span></button>
-          <button class="ddbtn" onclick="pDoc('eg')"><span>📋 Erstgespräch (Seite 1 & 2)</span><span>🖨️</span></button>
-          <button class="ddbtn" onclick="pDoc('vm')"><span>📄 Vollmacht Budgetabfrage</span><span>🖨️</span></button>
-          <button class="ddbtn" onclick="pDoc('at')"><span>📄 Abtretungserklärung §45b/§39</span><span>🖨️</span></button>
-          <button class="ddbtn" onclick="pDoc('ae')"><span>📄 Änderungsantrag ambulante Pflegeleistung</span><span>🖨️</span></button>
-          <button class="ddbtn" onclick="pDoc('eu')"><span>📄 EU Einwilligungserklärung</span><span>🖨️</span></button>
-          <div class="ddbtn" style="cursor:default;background:var(--gold-p);border-color:var(--gold);">
-            <span style="display:flex;align-items:center;gap:10px;">
-              <input type="checkbox" id="sepaCheck" style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer;" onchange="g('sepaBtn').style.display=this.checked?'flex':'none'">
-              <label for="sepaCheck" style="cursor:pointer;font-weight:700;">📄 SEPA-Lastschriftmandat (optional)</label>
-            </span>
-          </div>
-          <button class="ddbtn" id="sepaBtn" onclick="pDoc('sepa')" style="display:none;"><span>📄 SEPA-Lastschriftmandat</span><span>🖨️</span></button>
-        </div>
-        <div style="font-size:.72rem;color:var(--txt2);margin-top:8px;text-align:left;line-height:1.5;">
-          💻 <strong>PC:</strong> Druckdialog → Drucker auf „Als PDF speichern" stellen<br>
-          📱 <strong>Handy:</strong> Datei wird heruntergeladen → im Browser öffnen → Teilen → Als PDF
-        </div>
-        <div style="margin-top:10px;">
-          <button class="ddbtn" onclick="saveDoc('alle')" style="border-color:var(--txt2);"><span>📦 Alle als HTML-Archiv (ZIP) speichern</span><span>📥</span></button>
-        </div>
+      <div style="font-size:.72rem;color:var(--txt2);margin-top:8px;margin-bottom:14px;text-align:left;line-height:1.6;">
+        📱 <strong>Mobil:</strong> Dokument öffnet sich → oben „Drucken / PDF" tippen → Als PDF sichern<br>
+        💻 <strong>PC:</strong> Druckdialog → „Als PDF speichern" wählen
       </div>
 
       <button class="btn btn-s" onclick="resetAll()">🔄 Neues Erstgespräch starten</button>
@@ -1567,11 +1553,6 @@ function pDoc(which){
   const pb=`<div style="page-break-after:always;margin:0;padding:0;"></div>`;
   const sepaIncl=g('sepaCheck')?.checked||false;
 
-  const names={
-    eg:'Erstgespraech',vm:'Vollmacht_Budgetabfrage',at:'Abtretungserklaerung',
-    ae:'Aenderungsantrag',eu:'EU_Einwilligung',sepa:'SEPA_Mandat',alle:'Alle_Dokumente'
-  };
-
   let content='';
   if(which==='eg')content=docEG();
   else if(which==='vm')content=docVM();
@@ -1581,47 +1562,29 @@ function pDoc(which){
   else if(which==='sepa')content=docSEPA();
   else content=docEG()+pb+docVM()+pb+docAT()+pb+docAE()+pb+docEU()+(sepaIncl?pb+docSEPA():'');
 
-  const kname=v('k_name').replace(/[^a-zA-ZäöüÄÖÜß\s]/g,'').trim().replace(/\s+/g,'_')||'Klient';
-  const dat=fd(v('sig_dat'))||fd(new Date().toISOString().split('T')[0]);
-  const filename=`${names[which]}_${kname}_${dat.replace(/\./g,'-')}.html`;
+  // Inline-Overlay: funktioniert auf ALLEN Geräten inkl. Teams/Android
+  showDocOverlay(content);
+}
 
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>KM Fürsorge – ${names[which]}</title>${PCSS}<style>
-  @media screen{
-    body{max-width:800px;margin:0 auto;}
-    .print-btn{position:fixed;bottom:20px;right:20px;background:#B8922A;color:#1A1610;border:none;padding:14px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);z-index:999;}
-    .print-btn:hover{background:#D4AF5A;}
-    .save-hint{position:fixed;bottom:70px;right:20px;background:#1A1610;color:#D4AF5A;padding:8px 14px;border-radius:8px;font-size:11px;max-width:200px;text-align:center;z-index:999;}
-  }
-  @media print{.print-btn,.save-hint{display:none!important;}}
-  </style></head><body>
-  ${content}
-  <button class="print-btn" onclick="window.print()">🖨️ Drucken / Als PDF speichern</button>
-  <div class="save-hint">📱 Auf dem Handy: Teilen → „In Dateien sichern" oder „Als PDF sichern"</div>
-  </body></html>`;
+function showDocOverlay(content){
+  const ex=document.getElementById('docOverlay');
+  if(ex)ex.remove();
 
-  if(isMobile()){
-    // Mobile: download as HTML file which opens in browser for saving
-    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=filename;
-    document.body.appendChild(a);a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),3000);
-    showToast('📥 Datei wird heruntergeladen…');
-    setTimeout(hideToast,3000);
-  } else {
-    // Desktop: Blob-Download funktioniert auch in Teams zuverlässiger als window.open
-    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=filename;
-    document.body.appendChild(a);a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),3000);
-    showToast('📥 '+filename+' gespeichert – öffnen zum Drucken');
-    setTimeout(hideToast,3000);
-  }
+  const overlay=document.createElement('div');
+  overlay.id='docOverlay';
+  overlay.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff;z-index:99999;display:flex;flex-direction:column;font-family:Arial,sans-serif;';
+
+  const bar=document.createElement('div');
+  bar.style.cssText='background:#1A1610;color:#D4AF5A;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:bold;flex-shrink:0;gap:8px;flex-wrap:wrap;';
+  bar.innerHTML='<span style="font-size:11px;">📄 KM Fürsorge – Dokument</span><div style="display:flex;gap:8px;"><button onclick="window.print()" style="background:#B8922A;color:#1A1610;border:none;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;">🖨️ Drucken / PDF</button><button onclick="document.getElementById('docOverlay').remove()" style="background:#555;color:#fff;border:none;padding:8px 12px;border-radius:6px;font-size:12px;cursor:pointer;">✕ Schließen</button></div>';
+
+  const frame=document.createElement('div');
+  frame.style.cssText='flex:1;overflow-y:auto;padding:14px 18px;background:#fff;';
+  frame.innerHTML='<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#000;}h1{font-size:14px;text-align:center;margin-bottom:10px;}h2{font-size:12px;font-weight:bold;margin:10px 0 4px;border-bottom:1px solid #000;padding-bottom:2px;}h3{font-size:11px;font-weight:bold;margin:8px 0 4px;}table{width:100%;border-collapse:collapse;margin:4px 0 8px;}td,th{padding:3px 6px;border:1px solid #999;font-size:9.5px;vertical-align:top;}th{background:#EEE;font-weight:bold;font-size:9px;}.noborder td{border:none;padding:2px 0;}.line{border-bottom:1px solid #000;min-width:100px;display:inline-block;min-height:14px;vertical-align:bottom;}.cb{margin:3px 0;font-size:9.5px;}.footer{margin-top:16px;padding-top:6px;border-top:1px solid #ccc;font-size:8px;color:#555;text-align:center;}.header-firm{font-size:8px;color:#555;margin-bottom:10px;line-height:1.5;border-bottom:1px solid #eee;padding-bottom:6px;}.sig-block{margin-top:24px;display:flex;gap:30px;align-items:flex-end;flex-wrap:wrap;}.sig-line{border-bottom:1px solid #000;min-width:140px;padding-bottom:2px;margin-bottom:3px;min-height:40px;}.sig-img{max-height:38px;display:block;}div[style*="page-break"]{border-top:2px dashed #ccc;margin:18px 0;}@media print{div[style*="page-break"]{page-break-after:always;border:none;margin:0;}}</style>'+content;
+
+  overlay.appendChild(bar);
+  overlay.appendChild(frame);
+  document.body.appendChild(overlay);
 }
 
 // ── RESET ─────────────────────────────────────────────
