@@ -1316,34 +1316,21 @@ ${content}
 <\/script>
 </body></html>`;
 
-  // Mobile: direkter Download als HTML
+  // Blob-Download funktioniert auf allen Geräten inkl. Teams/Android
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename+'.html';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
   if(isMobile()){
-    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=filename+'.html';
-    document.body.appendChild(a);a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),3000);
     showToast('📥 Gespeichert – in Dateien öffnen zum Drucken');
-    setTimeout(hideToast,3500);
-    return;
-  }
-
-  // Desktop: neues Tab mit Auto-Print
-  const w=window.open('','_blank');
-  if(w){
-    w.document.write(html);
-    w.document.close();
   } else {
-    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=filename+'.html';
-    document.body.appendChild(a);a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    showToast('📥 '+filename+'.html gespeichert – öffnen zum Drucken/PDF');
   }
+  setTimeout(hideToast,3500);
+  return;
 }
 
 // ── GENERATE REAL PDF ─────────────────────────────────
@@ -1624,11 +1611,16 @@ function pDoc(which){
     showToast('📥 Datei wird heruntergeladen…');
     setTimeout(hideToast,3000);
   } else {
-    // Desktop: open in new tab with print button
-    const w=window.open('','_blank');
-    w.document.write(html);
-    w.document.close();
-    setTimeout(()=>w.print(),800);
+    // Desktop: Blob-Download funktioniert auch in Teams zuverlässiger als window.open
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    showToast('📥 '+filename+' gespeichert – öffnen zum Drucken');
+    setTimeout(hideToast,3000);
   }
 }
 
